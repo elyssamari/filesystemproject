@@ -49,7 +49,8 @@ typedef struct de{
 	uint64_t ford;				//file (0) or directory (1)
 	uint64_t size;				//size of de
 	uint64_t loc;				//where is de
-	char  *name;				//name of de
+	uint64_t namet;				//to see name on hexdump
+	char  dename [8];			//name of de
 }de_t, *de_p;
 
 de_p dep = NULL;
@@ -119,7 +120,9 @@ printf("what is bitmap[0] in vcb func %d\n",bitmap[0]);
 	LBAwrite(vcbp, 1, 0);		//writing the vcb, that's the red rectangle I have been
 					//screenshotting
 //printf("what is in dea[0] %s, %ld\n dea[1] %s, %ld\n",dea[0]->name,dea[0]->loc, dea[1]->name,dea[1]->loc);
-	free(vcbp);			//free the buffer
+	free(vcbp);			//free the buffers
+	free(bitmap);
+	free(dea);
 					//I should be freeing everything here right?
 }
 
@@ -184,6 +187,7 @@ printf("Did it check the first 2 bits?");
 			if(count == nblksn){	//if count=blksneeded then return where that 
 //setting them to 1 going in reverse.
 printf("insdie the allocte free space. count == nblksn\n");
+//this is what I intended the set bit to do
 				int setc = 0;
 				int seti = lasti;
 				int cc = j;
@@ -206,6 +210,7 @@ printf("-----------------end of unsuccessful allocate free-----------------\n");
 	return 0;				//return 0 if no space or error?
 }
 
+//Dunno if we are actually going to this one
 //set the bits starting at LBA til count, not sure about this one
 //seems like it could be done in allocate but then we should actually check if the block
 //has been written to. if this, then either we gotta store more values or put more paramters
@@ -229,6 +234,7 @@ void set_free_space(int LBA, int count){
 
 //unset the bits starting at LBA til count
 void release_free_space(int LBA, int count){
+printf("-------------start of release free space ----------------\n");
 	int idx = (LBA/8);			//each index of bitmap holds 8 so LBA/8 gives idx
 	int inneridx = (LBA%8)-1;			//need the innerindex of the bitmap[idx]
 	int trk = 0;				//to keep track of how much cleared
@@ -243,6 +249,7 @@ void release_free_space(int LBA, int count){
 		}
 	}
 	uint64_t wroten = LBAwrite(bitmap,vcbp->sffs,vcbp->sfs);
+printf("----------end of release free space-----------------\n");
 	//return;???? not sure
 	/*for(int i = 0; i<8; i++){
 		bitmap[0] &= ~(0<<i);
@@ -268,13 +275,17 @@ printf("where seg fault after child?\n");
 	char*parent = "..";
 	//int * i = 0;
 printf("where seg fault after parent?\n");
-		dea[0].name = child;
+		//dea[0].name = child;
+		strcpy(dea[0].dename,".");
 printf("where seg fault after setting?\n");
 		dea[0].loc = 0; 
 		dea[0].ford = 1;
 		dea[0].size = wherestop*sizeof(de_t);
+		dea[0].namet = 0x74656d616e726964;
 printf("Did it work?\n");
-		dea[1].name = parent;
+		strcpy(dea[1].dename,"..");
+		//dea[1].name = parent;
+		dea[1].namet = 0x74656d616e726964;
 		dea[1].loc = 0; 
 		dea[1].ford = 1;
 		dea[1].size = wherestop*sizeof(de_t);
@@ -283,8 +294,8 @@ printf("Did it work?\n");
 		//init
 	}
 printf("I don't see the values testing fields\n");
-printf("name %s | loc %ld | ford %ld |size %ld\n",dea[0].name,dea[0].loc,dea[0].ford,dea[0].size);
-printf("name %s | loc %ld | ford %ld |size %ld\n",dea[1].name,dea[1].loc,dea[1].ford,dea[1].size);
+printf("name %s | loc %ld | ford %ld |size %ld\n",dea[0].dename,dea[0].loc,dea[0].ford,dea[0].size);
+printf("name %s | loc %ld | ford %ld |size %ld\n",dea[1].dename,dea[1].loc,dea[1].ford,dea[1].size);
 printf("after the . and ..\n");
 	LBAwrite(dea, 2, vcbp->sroot);
 printf("where am I writing to? %ld\n",vcbp->sroot);
@@ -302,6 +313,7 @@ printf("where am I writing to? %ld\n",vcbp->sroot);
 	dea[i] = dep;				//put the directory entry into the array?
 	//set_free_space(vcbp->sfs,1);
 	uint64_t ind = LBAwrite(dep,1,vcbp->sroot);*/
+	//free(dea);
 printf("---------------end of create directory -------------------\n");
 	return 0;			
 }
