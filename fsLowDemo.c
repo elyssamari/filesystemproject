@@ -26,7 +26,7 @@
 //#include "fsLow.h"
 #include "VCB.h"
 #include "mfs.h"
-
+#include "b_io.h"
 
 int main (int argc, char *argv[])
 	{	
@@ -52,7 +52,8 @@ int main (int argc, char *argv[])
 //printf("why doesn't it print out here?");
 	init_VCB_blk(volumeSize,blockSize);	
 	printf("Opened %s, Volume Size: %llu;  BlockSize: %llu; Return %d\n", filename, (ull_t)volumeSize, (ull_t)blockSize, retVal);
-	
+	char * bname = "istest";
+	b_open(bname,1);
 	/*char * buf = malloc(blockSize *2);
 	char * buf2 = malloc(blockSize *2);
 	memset (buf, 0, blockSize*2);

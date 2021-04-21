@@ -23,10 +23,10 @@
 //bitmap[i] & 1<<i;		check, put in if statement
 
 //the structs are based on professor's code for the partition in the fsLow.c
-typedef struct VCB{
+/*typedef struct VCB{
 	char VCBPrefix[sizeof(H_CAPTION)+2];	//my helpppppp message
-	uint64_t mnum;				//magic number maybe
-	uint64_t signu;				//signature
+	uint64_t mnum;				//magic number maybe forgot what it was
+	uint64_t signu;				//signature forgot what it was
 	uint64_t nblkt;				//words for num of blocks to see in hexdump
 	uint64_t nblk;				//number of blocks
 	uint64_t sblkt;				//words for size of blocks to see in hexdump
@@ -38,23 +38,23 @@ typedef struct VCB{
 	uint64_t sffst;				//words for free space size
 	uint64_t sffs;				//size of free space map
 	
-}VCB_t, *VCB_p;
+}VCB_t, *VCB_p;*/
 
 /*typedef struct bitmap{
 	char * val;
 }bitmap_t, *bitmap_p;*/
 
 //based on the struct provided in the Tuesday lecture 4/13
-typedef struct de{
+/*typedef struct de{
 	uint64_t ford;				//file (0) or directory (1)
 	uint64_t size;				//size of de
 	uint64_t loc;				//where is de
 	uint64_t namet;				//to see name on hexdump
 	char  dename [8];			//name of de
-}de_t, *de_p;
+}de_t, *de_p;*/
 
-de_p dep = NULL;
-de_p * deaa = NULL;
+//de_p dep = NULL;
+//de_p * deaa = NULL;
 
 de_t * dea = NULL;
 VCB_p vcbp = NULL;				//initailizing this so call on this for fields
@@ -189,7 +189,7 @@ printf("Did it check the first 2 bits?");
 printf("insdie the allocte free space. count == nblksn\n");
 //this is what I intended the set bit to do
 				int setc = 0;
-				int seti = lasti;
+				int seti =i;
 				int cc = j;
 				while(setc < nblksn){
 printf("round %d: what is i %d: what is cc %d\n",setc,i,cc);
@@ -198,7 +198,9 @@ printf("round %d: what is i %d: what is cc %d\n",setc,i,cc);
 					setc++;
 					if(cc==-1){
 						cc=7;
+						seti--;
 					}
+					
 				}
 				LBAwrite(bitmap,vcbp -> sffs, vcbp -> sfs);
 printf("-----------------end of successsful allocate free -------------------\n");
@@ -289,6 +291,12 @@ printf("Did it work?\n");
 		dea[1].loc = 0; 
 		dea[1].ford = 1;
 		dea[1].size = wherestop*sizeof(de_t);
+		strcpy(dea[2].dename,"istest");
+		//dea[1].name = parent;
+		dea[2].namet = 0x74656d616e726964;
+		dea[2].loc = 3; 
+		dea[2].ford = 1;
+		dea[2].size = wherestop*sizeof(de_t);
 	}else{
 		//find free open 
 		//init
