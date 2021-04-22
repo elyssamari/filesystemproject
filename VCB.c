@@ -186,7 +186,7 @@ printf("Did it check the first 2 bits?");
 			}
 			if(count == nblksn){	//if count=blksneeded then return where that 
 //setting them to 1 going in reverse.
-printf("insdie the allocte free space. count == nblksn\n");
+//printf("insdie the allocte free space. count == nblksn\n");
 //this is what I intended the set bit to do
 				int setc = 0;
 				int seti =i;
@@ -257,46 +257,61 @@ printf("----------end of release free space-----------------\n");
 		bitmap[0] &= ~(0<<i);
 	}*/
 }
- 
+uint64_t makede(char*fname, uint64_t idx,uint64_t sz){
+	for(int i = 0; i<vcbp->sroots; i++){
+		if(dea[i].size == 0){
+			strcpy(dea[i].dename,fname);
+			dea[i].namet = 0x74656d616e726964;
+			dea[i].loc = idx; 
+			dea[i].ford = 1;
+			dea[i].size = sz;
+			return idx;
+		}
+	}
+	return 0;
+}
 //create DE, put into DE array, LBA write, mark them out in free space 
 //pretty sure i'm not doing this one right.
 uint64_t createDir(char *name ,uint64_t i){
 printf("-----------------inside the create directory-----------------------\n");
-	int wherestart = allocate_free_space(2);
-printf("after allocate\n");
+	uint64_t wherestart = allocate_free_space(2);
+//printf("after allocate\n");
 	dea = malloc(2*(vcbp->sblk));
-printf("after malloc of create Dir\n");
-	int wherestop = (2*(vcbp->sblk))/sizeof(de_t);
-printf("b4 the the . and ..\n");
+//printf("after malloc of create Dir\n");
+	uint64_t wherestop = (2*(vcbp->sblk))/sizeof(de_t);
+	vcbp->sroots = wherestop;
+printf("what is the size of de %ld\n",sizeof(de_t));
+printf("what is wherestop %ld\n",wherestop);
+//printf("b4 the the . and ..\n");
 char*testnull = "NULL\0";
-printf("name %s | testnull %s\n",name,testnull);
+//printf("name %s | testnull %s\n",name,testnull);
 	if(strcmp(name,testnull)==0){
 printf("Didi i even make it into this if statment in create dir \n");
 	char*child = ".";
-printf("where seg fault after child?\n");
+//printf("where seg fault after child?\n");
 	char*parent = "..";
 	//int * i = 0;
-printf("where seg fault after parent?\n");
+//printf("where seg fault after parent?\n");
 		//dea[0].name = child;
 		strcpy(dea[0].dename,".");
-printf("where seg fault after setting?\n");
+//printf("where seg fault after setting?\n");
 		dea[0].loc = 0; 
 		dea[0].ford = 1;
-		dea[0].size = wherestop*sizeof(de_t);
+		dea[0].size = 2;
 		dea[0].namet = 0x74656d616e726964;
-printf("Did it work?\n");
+//printf("Did it work?\n");
 		strcpy(dea[1].dename,"..");
 		//dea[1].name = parent;
 		dea[1].namet = 0x74656d616e726964;
 		dea[1].loc = 0; 
 		dea[1].ford = 1;
-		dea[1].size = wherestop*sizeof(de_t);
+		dea[1].size = 2;
 		strcpy(dea[2].dename,"istest");
 		//dea[1].name = parent;
 		dea[2].namet = 0x74656d616e726964;
 		dea[2].loc = 3; 
 		dea[2].ford = 1;
-		dea[2].size = wherestop*sizeof(de_t);
+		dea[2].size = 3;
 	}else{
 		//find free open 
 		//init
@@ -323,5 +338,5 @@ printf("where am I writing to? %ld\n",vcbp->sroot);
 	uint64_t ind = LBAwrite(dep,1,vcbp->sroot);*/
 	//free(dea);
 printf("---------------end of create directory -------------------\n");
-	return 0;			
+	return wherestart;			
 }

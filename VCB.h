@@ -25,6 +25,7 @@ typedef struct VCB{
 	uint64_t sblk;				//size of block
 	uint64_t sroott;			//words for root dir to see in hexdump
 	uint64_t sroot;				//where does root dir start
+	uint64_t sroots;			//how many possible entries
 	uint64_t sfst;				//words for free space to see in hexdump
 	uint64_t sfs;				//where does free space start
 	uint64_t sffst;				//words for free space size
@@ -48,5 +49,6 @@ int allocate_free_space(int nblksn);
 void set_free_space(int LBA, int count);
 void release_free_space(int LBA, int count);
 void allocate_dir();
+uint64_t makede(char*fname, uint64_t idx,uint64_t sz);
 uint64_t createDir(char name [],uint64_t i);
 
