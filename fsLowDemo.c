@@ -52,8 +52,18 @@ int main (int argc, char *argv[])
 //printf("why doesn't it print out here?");
 	init_VCB_blk(volumeSize,blockSize);	
 	printf("Opened %s, Volume Size: %llu;  BlockSize: %llu; Return %d\n", filename, (ull_t)volumeSize, (ull_t)blockSize, retVal);
+//b-open test for file already made
 	char * bname = "istest";
 	b_open(bname,1);
+//b-read test for file already made
+	char * buf = malloc(512);
+	int rred = b_read(4,buf,512);
+	printf("------------Testing b_read------------\nwhat is returned %d\n%s\n",rred,buf);
+//b-write
+
+//b-close
+
+//b-seek
 	/*char * buf = malloc(blockSize *2);
 	char * buf2 = malloc(blockSize *2);
 	memset (buf, 0, blockSize*2);

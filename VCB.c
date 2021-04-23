@@ -306,12 +306,20 @@ printf("Didi i even make it into this if statment in create dir \n");
 		dea[1].loc = 0; 
 		dea[1].ford = 1;
 		dea[1].size = 2;
+//start of test
 		strcpy(dea[2].dename,"istest");
 		//dea[1].name = parent;
 		dea[2].namet = 0x74656d616e726964;
-		dea[2].loc = 3; 
+		dea[2].loc = 4; 
 		dea[2].ford = 1;
 		dea[2].size = 3;
+		char*ttbb = malloc(512);
+		strcpy(ttbb,tblk);
+		printf("%s",ttbb);
+		uint64_t reh = LBAwrite(ttbb,1,4);
+		if(reh == 0){printf("-------------write didn't work-----------------\n");}
+		free(ttbb);
+//end of test
 	}else{
 		//find free open 
 		//init

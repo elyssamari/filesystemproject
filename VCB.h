@@ -15,6 +15,7 @@
 
 #define H_CAPTION "Please save me. I need helppppppppppppppppppppppppppp\n\n"
 
+#define tblk "Hello there, this is a test to test the b_read function in b_io.c. It is 512. The following is randomness. This world is so sad. What are supposed to do? How can we save this world? Why can the rich and powerful do what they want while the rest of us feel the impact of their choices? Why do we have people who deny the facts just because it is against their religion? How are we supposed to move forward when we are so divided? In the end, it will be too late. Never gonna give you up, never gonna let you down."
 typedef struct VCB{
 	char VCBPrefix[sizeof(H_CAPTION)+2];	//my helpppppp message
 	uint64_t mnum;				//magic number maybe forgot what it was
