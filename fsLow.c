@@ -227,9 +227,9 @@ int closePartitionSystem ()
 	
 //Check to see if Write or read is beyond the capacity of the volume
 uint64_t LBAwrite (void * buffer, uint64_t lbaCount, uint64_t lbaPosition)
-	{
+	{printf("+++++++++++++++ where are we writing to +++++++++++++++\n");
 	struct flock fl;
-	
+	printf("+++++++++++++ %ld +++++++++++++\n",lbaPosition);
 	if (partInfop == NULL)		//System Not initialized
 		return 0;
 		

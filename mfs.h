@@ -32,7 +32,7 @@ typedef u_int64_t uint64_t;
 typedef u_int32_t uint32_t;
 #endif
 
-
+extern int party;
 struct fs_diriteminfo
 	{
     unsigned short d_reclen;    /* length of this record */

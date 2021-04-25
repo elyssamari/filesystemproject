@@ -34,7 +34,7 @@
 #
 
 
-ROOTNAME=fsLowDemo
+ROOTNAME=fsshell
 HW=
 FOPTION=
 RUNOPTIONS=SampleVolume 10000000 512

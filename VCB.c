@@ -95,17 +95,17 @@ printf("---------------------------inside the init_VCB_blk----------------------
 	vcbp -> nblkt = 0x6d756e6b636f6c62;
 	vcbp -> nblk = nblk/sblk;
 	uint64_t written = init_free_space(vcbp->nblk,sblk);//start freespace
-printf("checking where did bitmap change %d\n",bitmap[0]);
+//printf("checking where did bitmap change %d\n",bitmap[0]);
 	vcbp -> sfs = 1;				//due to vcb in 0, free starts at 1
-printf("what is written: %ld\n",written);
+//printf("what is written: %ld\n",written);
 	vcbp -> sroot = written+1;			//should be where free ends +1
-printf("what is sroot: %ld\n",vcbp->sroot);
+//printf("what is sroot: %ld\n",vcbp->sroot);
 	//char*rname = '.';
 	//char*pname = "..";
 	uint64_t der = createDir("NULL",0);		//I'm unsure about the directory
-printf("checking where did bitmap change %d\n",bitmap[0]);
+//printf("checking where did bitmap change %d\n",bitmap[0]);
 	//uint64_t der2 = createDir("..",1);
-printf("checking where did bitmap change %d\n",bitmap[0]);
+//printf("checking where did bitmap change %d\n",bitmap[0]);
 	vcbp -> sroott = 0x74726964746f6f72;
 	vcbp -> sfst = 0x6361707365657266;
 	vcbp -> signu = Signu;
@@ -114,7 +114,7 @@ printf("checking where did bitmap change %d\n",bitmap[0]);
 	//int ret = allocate_free_space(2);		//please test
 	//printf("what is the return of allocate_free_space %d\n",ret);
 	//release_free_space(1,1);			//please test
-printf("what is bitmap[0] in vcb func %d\n",bitmap[0]);
+//printf("what is bitmap[0] in vcb func %d\n",bitmap[0]);
 //int cou = allocate_free_space(3);			//please test
 //printf("what is the return from allocate %d\n",cou);
 	LBAwrite(vcbp, 1, 0);		//writing the vcb, that's the red rectangle I have been
@@ -130,7 +130,7 @@ printf("what is bitmap[0] in vcb func %d\n",bitmap[0]);
 
 uint64_t init_free_space(){
 printf("inside the init_free_space\n");
-printf("what is inside vcbp:\nnumblks %ld\nsizeblk %ld\n",vcbp->nblk, vcbp->sblk);
+//printf("what is inside vcbp:\nnumblks %ld\nsizeblk %ld\n",vcbp->nblk, vcbp->sblk);
 	uint64_t bytesN = (vcbp -> nblk/8);		//bc there's 8 bits per byte
 	uint64_t blksneed;
 if((bytesN/vcbp->sblk)==0){
@@ -140,24 +140,24 @@ if((bytesN/vcbp->sblk)==0){
 }
 	vcbp->sffs = blksneed;
 //uint64_t blksneed = ((bytesN/vcbp->sblk)==0)?1:(bytesN/vcbp-> sblk);
-printf("what is blksneeded for freespace %ld\n",blksneed);
-printf("b4 the calloc of free space\n");
+//printf("what is blksneeded for freespace %ld\n",blksneed);
+//printf("b4 the calloc of free space\n");
 	bitmap = (char*)calloc((blksneed*(vcbp->sblk)),sizeof(char));
 	//bitmap_p bmp = malloc(blksneed*sblk);
-printf("b4 the for loop of the free space is bitmap null?%s\n",bitmap);
+//printf("b4 the for loop of the free space is bitmap null?%s\n",bitmap);
 	//bitmap[0] |= 1<<0;				//for vcb
 //This was a test to see if it shows, remove later
 	//for vcb block and freespace map block(s)
 	for(int i = 0; i<=blksneed; i++){
 
 		bitmap[0] |= 1<<i;
-printf("How many times is this running %d\nand what is bitmap[0] %d\n",i,bitmap[0]);
+//printf("How many times is this running %d\nand what is bitmap[0] %d\n",i,bitmap[0]);
 		
 	}
-printf("wat is bitmap[0] = %c",bitmap[0]);
+//printf("wat is bitmap[0] = %c",bitmap[0]);
 	
 	uint64_t wrote = LBAwrite(bitmap,blksneed,1); //write the bitmap
-printf("b4 the return of free space\n");
+//printf("b4 the return of free space\n");
 	return (wrote);				//I'm not sure what it should return
 							//if it return how many blks written
 							//then it's easier for root dir start
@@ -177,7 +177,7 @@ printf("------------inside of the allocate free space ----------------------\n")
 				lasti = i;
 			}
 			if(((bitmap[i] >> j) & 1)==1){	//check if it's been set, if so we don't want it				
-printf("Did it check the first 2 bits?");				
+//printf("Did it check the first 2 bits?");				
 				count = 0;
 				start = 0;
 			}else{			//else start tracking unset bits
@@ -192,7 +192,7 @@ printf("Did it check the first 2 bits?");
 				int seti =i;
 				int cc = j;
 				while(setc < nblksn){
-printf("round %d: what is i %d: what is cc %d\n",setc,i,cc);
+//printf("round %d: what is i %d: what is cc %d\n",setc,i,cc);
 					bitmap[i] |= 1 << cc;
 					cc--;
 					setc++;
@@ -274,19 +274,19 @@ uint64_t makede(char*fname, uint64_t idx,uint64_t sz){
 //pretty sure i'm not doing this one right.
 uint64_t createDir(char *name ,uint64_t i){
 printf("-----------------inside the create directory-----------------------\n");
-	uint64_t wherestart = allocate_free_space(2);
+	uint64_t wherestart = allocate_free_space(3);
 //printf("after allocate\n");
 	dea = malloc(2*(vcbp->sblk));
 //printf("after malloc of create Dir\n");
 	uint64_t wherestop = (2*(vcbp->sblk))/sizeof(de_t);
 	vcbp->sroots = wherestop;
-printf("what is the size of de %ld\n",sizeof(de_t));
-printf("what is wherestop %ld\n",wherestop);
+//printf("what is the size of de %ld\n",sizeof(de_t));
+//printf("what is wherestop %ld\n",wherestop);
 //printf("b4 the the . and ..\n");
 char*testnull = "NULL\0";
 //printf("name %s | testnull %s\n",name,testnull);
 	if(strcmp(name,testnull)==0){
-printf("Didi i even make it into this if statment in create dir \n");
+//printf("Didi i even make it into this if statment in create dir \n");
 	char*child = ".";
 //printf("where seg fault after child?\n");
 	char*parent = "..";
@@ -312,10 +312,10 @@ printf("Didi i even make it into this if statment in create dir \n");
 		dea[2].namet = 0x74656d616e726964;
 		dea[2].loc = 4; 
 		dea[2].ford = 1;
-		dea[2].size = 3;
+		dea[2].size = 1;
 		char*ttbb = malloc(512);
 		strcpy(ttbb,tblk);
-		printf("%s",ttbb);
+		//printf("%s",ttbb);
 		uint64_t reh = LBAwrite(ttbb,1,4);
 		if(reh == 0){printf("-------------write didn't work-----------------\n");}
 		free(ttbb);
@@ -324,12 +324,12 @@ printf("Didi i even make it into this if statment in create dir \n");
 		//find free open 
 		//init
 	}
-printf("I don't see the values testing fields\n");
-printf("name %s | loc %ld | ford %ld |size %ld\n",dea[0].dename,dea[0].loc,dea[0].ford,dea[0].size);
-printf("name %s | loc %ld | ford %ld |size %ld\n",dea[1].dename,dea[1].loc,dea[1].ford,dea[1].size);
-printf("after the . and ..\n");
+//printf("I don't see the values testing fields\n");
+//printf("name %s | loc %ld | ford %ld |size %ld\n",dea[0].dename,dea[0].loc,dea[0].ford,dea[0].size);
+//printf("name %s | loc %ld | ford %ld |size %ld\n",dea[1].dename,dea[1].loc,dea[1].ford,dea[1].size);
+//printf("after the . and ..\n");
 	LBAwrite(dea, 2, vcbp->sroot);
-printf("where am I writing to? %ld\n",vcbp->sroot);
+//printf("where am I writing to? %ld\n",vcbp->sroot);
 	/*for(int i = 2; i<wherestop; i++){
 		deaa[i] -> name = NULL;
 		deaa[i] -> loc = i; 

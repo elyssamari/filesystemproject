@@ -27,7 +27,7 @@
 
 /***************  START LINUX TESTING CODE FOR SHELL ***************/
 #define TEMP_LINUX 0  //MUST be ZERO for working with your file system
-#if (TEMP_LINUX == 1)
+#if (TEMP_LINUX == 0)
 	// All the following it TEMPORARY ONLY - It allows testing the shell in linux
 	// but using the test files system function calls  
 	// This must be off for testing your file system
@@ -42,7 +42,7 @@
 	
 	
 	fdDir * fs_opendir(const char *name)
-		{
+		{printf("inside fs_opendir in fsshell\n");
 		DIR * dir;
 		dir = opendir(name);
 		return ((fdDir *) dir);
@@ -50,7 +50,7 @@
 	
 	struct fs_diriteminfo fsDi;	
 	struct fs_diriteminfo *fs_readdir(fdDir *dirp)
-		{
+		{printf("inside ds_readdir in fsshell\n");
 		DIR *dir;
 		dir = (DIR *) dirp;
 		struct dirent * de;
@@ -59,13 +59,13 @@
 			return (NULL);
 			
 			
-		fsDi.d_reclen = (unsigned short) sizeof (fsDe);
+		fsDi.d_reclen = (unsigned short) sizeof (fsDi);
 		fsDi.fileType = de->d_type;
 		strcpy(fsDi.d_name, de->d_name);
 		return (&fsDi);
 		}
 		
-	int fs_closedir(fs_DIR *dirp)
+	int fs_closedir(fdDir *dirp)
 		{
 		DIR *dir;
 		dir = (DIR *) dirp;
@@ -73,7 +73,7 @@
 		}
 
 	int fs_stat(const char *path, struct fs_stat *buf)
-		{
+		{printf("inside fs_stat in fsshell\n");
 		struct stat * path_stat;
 		path_stat = (struct stat *) buf;
 		return (stat (path, path_stat));
@@ -81,14 +81,14 @@
 
 	
 	int fs_isFile (char * path)
-		{
+		{printf("inside fs_isFile in fsshell\n");
 		struct stat path_stat;
 		stat(path, &path_stat);
 		return S_ISREG(path_stat.st_mode);
 		}
 	
 	int fs_isDir (char * path)
-		{
+		{printf("inside fs_isDir in fsshell\n");
 		struct stat path_stat;
 		if (stat(path, &path_stat) != 0)
 			return 0;
@@ -106,15 +106,15 @@
 #define DIRMAX_LEN		4096
 
 /****   SET THESE TO 1 WHEN READY TO TEST THAT COMMAND ****/
-#define CMDLS_ON	0
-#define CMDCP_ON	0
-#define CMDMV_ON	0
-#define CMDMD_ON	0
-#define CMDRM_ON	0
-#define CMDCP2L_ON	0
-#define CMDCP2FS_ON	0
-#define CMDCD_ON	0
-#define CMDPWD_ON	0
+#define CMDLS_ON	1
+#define CMDCP_ON	1
+#define CMDMV_ON	1
+#define CMDMD_ON	1
+#define CMDRM_ON	1
+#define CMDCP2L_ON	1
+#define CMDCP2FS_ON	1
+#define CMDCD_ON	1
+#define CMDPWD_ON	1
 
 
 typedef struct dispatch_t
@@ -155,7 +155,7 @@ static int dispatchcount = sizeof (dispatchTable) / sizeof (dispatch_t);
 
 // Display files for use by ls command
 int displayFiles (fdDir * dirp, int flall, int fllong)
-	{
+	{printf("inside displayFiles in fsshell\n");
 #if (CMDLS_ON == 1)				
 	if (dirp == NULL)	//get out if error
 		return (-1);
@@ -198,7 +198,7 @@ int cmd_ls (int argcnt, char *argvec[])
 	int fllong;
 	int flall;
 	char cwd[DIRMAX_LEN];
-		
+printf("Inside cmd_ls in fsshell\n");
 	static struct option long_options[] = 
 		{
 			/* These options set their assigned flags to value and return 0 */
@@ -291,6 +291,7 @@ int cmd_ls (int argcnt, char *argvec[])
 		return (displayFiles (dirp, flall, fllong));
 		}
 #endif
+
 	return 0;
 	}
 
@@ -300,7 +301,7 @@ int cmd_ls (int argcnt, char *argvec[])
 ****************************************************/
 	
 int cmd_cp (int argcnt, char *argvec[])
-	{
+	{printf("inside cmd_cp in fsshell\n");
 #if (CMDCP_ON == 1)	
 	int testfs_src_fd;
 	int testfs_dest_fd;
@@ -376,7 +377,7 @@ int cmd_md (int argcnt, char *argvec[])
 *  Remove directory or file commmand
 ****************************************************/
 int cmd_rm (int argcnt, char *argvec[])
-	{
+	{printf("inside cmd_rm in fsshell\n");
 #if (CMDRM_ON == 1)
 	if (argcnt != 2)
 		{
@@ -405,7 +406,7 @@ int cmd_rm (int argcnt, char *argvec[])
 *  Copy file from test file system to Linux commmand
 ****************************************************/
 int cmd_cp2l (int argcnt, char *argvec[])
-	{
+	{printf("inside cmd_cp2l in fsshell\n");
 #if (CMDCP2L_ON == 1)				
 	int testfs_fd;
 	int linux_fd;
@@ -449,7 +450,7 @@ int cmd_cp2l (int argcnt, char *argvec[])
 *  Copy file from Linux to test file system commmand
 ****************************************************/
 int cmd_cp2fs (int argcnt, char *argvec[])
-	{
+	{printf("inside cmd_cp2fs in fsshell\n");
 #if (CMDCP2FS_ON == 1)				
 	int testfs_fd;
 	int linux_fd;
@@ -493,7 +494,7 @@ int cmd_cp2fs (int argcnt, char *argvec[])
 *  cd commmand
 ****************************************************/
 int cmd_cd (int argcnt, char *argvec[])
-	{
+	{printf("inside cmd_cd in fsshell \n");
 #if (CMDCD_ON == 1)	
 	if (argcnt != 2)
 		{
