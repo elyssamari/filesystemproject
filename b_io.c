@@ -3,196 +3,205 @@
 #include "VCB.h"
 #include <stdlib.h>
 #include <string.h>
+#include <pthread.h>
 #include "mfs.h"
+#define maxf 20
 typedef struct finfo{
 	int bc;			//blockcount of file use for r/w
 	int fidx;		//file index use for r/w
 	char * fbuffer;		//file buffer use for r/w
+	int bufferdata;
 	int per;		//file permission
 	int startf;		//what is the start/lba index
 	int flen;		//blk len of file from that lba index
 	int didx;		//index in the de array
-}finfo_t, *finfo_p;
+}finfo;
 int party = 0;
-finfo_p fiop = NULL;
-fdDir *fdDiri = NULL;
+//finfo_p fiop = NULL;
+//fdDir *fdDiri = NULL;
+finfo farr [maxf];
+int started = 0;
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+VCB_p vcbp;
+void b_init (){
+	//init fcbArray to all free
+	for (int i = 0; i < maxf; i++){
+		farr[i].didx = -1; //indicates a free fcbArray
+	}
+		
+	started = 1;
+}
+
+int b_getfarr (){
+	for (int i = 0; i < maxf; i++){
+		if (farr[i].didx == -1){
+			farr[i].didx = -2; // used but not assigned
+			return i;		//Not thread safe
+		}
+	}
+	return (-1);  //all in use
+}
+
 
 int b_open (char * filename, int flags){
 printf("------------------inside the b_open in b_io.c-----------------\n");
-printf("did name make it %s\n",filename);
-char*testthe = "testone";
-if(party == 0 ){
-char*bsize = "500000";
-char*blksze = "512";
-uint64_t bytesize = atoll(bsize);
-uint64_t blockysize = atoll(blksze);
-printf("------what's wrog with the blksize-----------\n %ld\n",blockysize);
-startPartitionSystem(testthe,&bytesize,&blockysize);
-init_VCB_blk(bytesize,blockysize);
-party = 1;}
-	fiop = malloc(1000);
-	fdDiri = malloc(1000);
-	//set permissions. there's only two that's used in the shell so there's 2 not 7.
-	if(flags==0){
-		fiop -> per = 1;
-	}else if(flags>0){
-		fiop -> per=2;
-	}
+if(party == 1){printf("party is 1. what is sroots %ld\n",vcbp->sroots);getval();}
+//need to check if the array is init
+if(started == 0){b_init();}
+printf("after b_init in b-open\n");
+//need to get space
+int idx = b_getfarr();
+if(idx == -1){printf("no more space\n"); return -1;}
+printf("after the b_getfarr in b-open\n");
+//need to make sure Partition is started
+	char * sname = "testone";
+	uint64_t vsize = 500000;
+	uint64_t bsize = 512;
 	
-	printf("b-io.c b-open filename %s, numof flags %d\n",filename, flags);
-	printf("what is the value of vcb here in b_io.c?: %ld\n",vcbp->sroot);
-	//printf("what is the value of dea here in b_io.c?: %s\n",dea[2].dename);
-	fiop -> bc = 0;
-	fiop -> fidx = 0;
-	fiop -> fbuffer = malloc(vcbp->sblk);
-printf("where did it seg fault? \n");
-	//how to get VCB dea in this file tho. not sure
-	//of cousre it won't go up to 10, gotta find length. new var?
-	for(int i = 0; i<vcbp->sroots; i++){
-		if(strcmp(dea[i].dename,filename)==0){
-printf("did we make it into the if statement for comparing filename\n");
-			fiop->flen = dea[i].size;
-			fiop->startf = dea[i].loc;
-			fiop->didx = i;
-			fdDiri->directoryStartLocation = dea[i].loc;
-			fdDiri->dirEntryPosition = i;
-			fdDiri->d_reclen = dea[i].size;
-			return dea[i].loc;
+	
+	if(party == 0 ){int istart = startPartitionSystem(sname, &vsize, &bsize);
+if(istart != 0){printf("unable to open\n"); return -1;}
+		init_VCB_blk(vsize,bsize);
+		party = 1;
+	}else{
+printf("what is sroots %ld\n",vcbp->sroots);}
+printf("after the start partition system and init_VCB_blk in b-open\n");
+printf("why does it stop here?\n");
+printf("what i sthe sroots %ld\n",vcbp->sroots);
+//need to find filename in directory array
+	for(int i = 0; i < 25; i++){
+		if(strcmp(dea[i].dename, filename) == 0){
+			farr[idx].didx = i;
+			break;
+		}
+		if((i+1)  == vcbp->sroots){
+			farr[idx].startf = allocate_free_space(1);
+			farr[idx].didx = makede(filename,farr[idx].startf,1);
 		}
 	}
-	
-	//if reach here, then there is no file. gotta make it
-	//allocate the space to do so
-	fiop->startf = allocate_free_space(5);
-	//check if there was enough space
-	if(fiop->startf == 0){printf("No more space for file.\n");return -1;}
-	//create the de
-	
-	makede(filename,fiop->startf,2);
-printf("what is the start of create file %d\n",fiop->startf);
-printf("what's wrong with the blkize %ld\n",vcbp->sblk);
-	fiop->flen = 2;
-	//return the start of the de
-	return fiop->startf;
+printf("after the for loop to find matching filename in b-open\n");
+//need to initalize values from struct
+	farr[idx].flen = dea[farr[idx].didx].size;
+	farr[idx].startf = dea[farr[idx].didx].loc;
+	farr[idx].bc = 0;
+	farr[idx].fidx = 0;
+	farr[idx].fbuffer = malloc(vcbp->sblk);
+	farr[idx].bufferdata = 0;
+printf("after the init values of struct in b-open\n");
+//need to determine permissions
+	if(flags = 0){farr[idx].per = 1;}
+	if(flags > 0){farr[idx].per = 2;}
+printf("after the setting per in b-open\n");
+//need to return farr index
+//int retv = allocate_free_space(3);
+//printf("what is allocate %d\n",retv);
+
+//need to make one if none
+
+	return idx;
 }
 
 int b_read (int fd, char * buffer, int count){
 printf("-----------inside the b_read in b_io.c------------\n");
 printf("what' swrong with blksize %ld\n",vcbp->sblk);
-	if(fiop->per == -1){printf("ERROR: file was closed. file not opened\n");}
-	//keep track of how much is copied
-	int trk = 0;
-printf("made it past per check, b4 the while loop\n");
-printf("what is fidx %d\n",fiop->fidx);
-	//loop to copy byte by byte :) 
-	while(trk<count){
-if(fiop->fidx == 512){printf("what is block size %ld\n",vcbp->sblk);fiop->fidx = 0;return 0;}
-//printf("inside the while loop. what is trk: %d\n",trk);
-		//read to the file buffer for one block at given fd
-		if(fiop->fidx == 0){
-//printf("after the check fidx. where is seg fault?\n");
-printf("b4 the lbaread what is blksize %ld\n",vcbp->sblk);
-//i don't know how lbaread changed the vcbp->sblk
-//so i save and rest the value
-uint64_t idkhowsblk = vcbp->sblk;
-			uint64_t rev = LBAread(fiop->fbuffer,1,fd);
-printf("after the lbaread what is the return %ld\n",rev);
-vcbp->sblk = idkhowsblk;
-		//if reached end of blk read again
-		}/*else if(fiop->fidx >= vcbp->sblk){
-printf("+++++++++++++what is fidx %d and bc %d and flen %d\n",fiop->fidx, fiop->bc,fiop->flen);
-			fiop->bc++;			//update blocks read
-			fiop->fidx = 0; 		//reset tracker
-			//check if any more valid blks to read
-			//if not, return 0
-			if(fiop->bc == fiop->flen){fiop->bc=0;return 0;}
-			//if yes read
-			LBAread(fiop->fbuffer, 1, fd + fiop->bc);
-			
-		}*/
+	if(farr[fd].per == -1){printf("ERROR: file was closed. file not opened\n"); return 0;}
+	//keep track of how much data is copied to the buffer
+		int dataCopied = 0;
 
-		//copy into caller buffer
-		buffer[trk] = fiop->fbuffer[fiop->fidx];
-		fiop->fidx++;			
-		trk++;				//update the two trackers
+		//loop makes sure that enough chars are being copied into the buffer, it will 			
+		//stop once the requested amount is filled or EOF
+		while(dataCopied != count){
 
-		//check if we reached end of block
-		/*if(fiop->fidx > vcbp->sblk){
-			fiop->bc++;			//update blocks read
-			fiop->fidx = 0; 		//reset tracker
-			LBAread(fiop->fbuffer, 1, fd + fiop->bc);
-		}*/
-	}
-printf("what is trk %d\n",trk);
+			//checking the amount in the file buffer, will execute a read to fill 	
+			//file buffer if it's 0
+			if(farr[fd].fidx == 0){
+//printf("what is sblk %ld\n",vcbp->sblk);
+				uint64_t savesblk = vcbp->sblk;
+printf("what is the farr[fd].startf %d\n",farr[fd].startf);
+				LBAread(farr[fd].fbuffer, 1, farr[fd].startf);
+//printf("what in buffer?\n %s \n",buffer);
+//printf("what is sblk %ld\n",vcbp->sblk);
+				vcbp->sblk = savesblk;
+				farr[fd].bufferdata = vcbp->sblk;
+				farr[fd].fidx = farr[fd].bufferdata;
+				
+			}
+			if(farr[fd].bufferdata <= 0){
+					//will return the dataCopied, exiting the function since 
+					//EOF is reached, there's nothing to copy to buffer
+					
+					return dataCopied;
+			}
+				//the copying of the bufferIndex data into the buffer
+				//setting the space at the index of the buffer to what is in the bufferIndex's index
+				buffer[dataCopied] = farr[fd].fbuffer[farr[fd].fidx - farr[fd].bufferdata];
+
+				//decrementing the bufferData so that we know where we are in the bufferIndex.
+				farr[fd].bufferdata--;
+
+				//incrementing the dataCopied so we know how much we copied over into the buffer
+				dataCopied++;
+				
+		}
+printf("what is bufferdata %d\n",farr[fd].bufferdata);
+		printf("what us datacopied %d\n",dataCopied);
+		//return the dataCopied so that in main, they'll know where to add the '\0'
+		return dataCopied;
+	
+		
+		
 printf("whats' in buffer\n %s\n",buffer);
 printf("at end of b_read what's  wrong with block size %ld\n",vcbp->sblk);
-	return trk;
+	//return trk;
 }
 
 int b_write (int fd, char * buffer, int count){
 printf("--------inside the b_write in b_io.c------------\n");
 printf("start of b_write what's wrong with blockisze %ld\n",vcbp->sblk);
 	//check permissions
-	if(fiop->per == -1){printf("ERROR: file was closed. file not opened\n");}
-	if(fiop->per == 4){printf("ERROR: only read allowed\n");}
-	if(count == 0){LBAwrite(fiop->fbuffer,1,fiop->startf);}
-	int trk = 0;
+	if(farr[fd].per == -1){printf("ERROR: file was closed. file not opened\n");}
+	if(farr[fd].per == 1){printf("ERROR: only read allowed\n");}
+	//if(count == 0){LBAwrite(farr[fd].fbuffer, 1, farr[fd].startf);}
+	//int trk = 0;
 	//need case for if b_close calls this to write rest to file
 	//
-
+printf("after per check of b_write what's wrong with blockisze %ld\n",vcbp->sblk);
 	//copy byte by byte :) cries in time complexity
-	while(trk < count){
+	/*while(trk < count){
 		//check if file buffer full
-		if(fiop->fidx == vcbp->sblk){
+		if(farr[fd].fidx == vcbp->sblk){
 printf("inside the if statemt of b_write\n");
-	LBAwrite(fiop->fbuffer, 1, fiop->startf);
-printf("wat was the position to write %d\n",fiop->startf);
+	LBAwrite(farr[fd].fbuffer, 1, farr[fd].startf);
+printf("wat was the position to write %d\n", farr[fd].startf);
 	return 0;
-			//check there even is a blk to write to
-			//if(fiop->bc < fiop->flen){
-	
-			//	LBAwrite(fiop->fbuffer,1,fd+fiop->bc);
-			//	fiop->bc++;
-			/*}else{
-				//hee hee now that's an issue ain't it
-				//gotta find free space to meet needs
-				int c = allocate_free_space(fiop->flen+fiop->flen);
-				if(c==0){printf("no more space\n");return 0;}
-				//copy info there
-				int ctrk = 0;
-				char * cbuffer = malloc(vcbp->sblk);
-				//copying what's in the blocks
-				while(ctrk < fiop->flen){
-					LBAread(cbuffer,1,ctrk+fiop->startf);
-					LBAwrite(cbuffer, 1, ctrk+c);
-					ctrk++;
-				}
-
-				//write the block that caused this 
-				LBAwrite(fiop->fbuffer,1,ctrk+c);
-				//resetting values
-				fiop->startf = c;
-				dea[fiop->didx].loc = c;
-				dea[fiop->didx].size = fiop->flen + fiop->flen;
-				fiop->flen = dea[fiop->didx].size;
-				
-			}*/
-
-		}
-		//copy caller buffer to file buffer
-		fiop->fbuffer[fiop->fidx] = buffer[trk];
-		fiop->fidx++;				//update the trackers
-		trk++;
+		}*/
+		int readNum = 0;		//keep track of bytes written or in this case, copied
+	//to write the last block that didn't make it to 512
+	if(count == 0){
+		uint64_t sav  = vcbp->sblk;
+		LBAwrite(farr[fd].fbuffer,1, farr[fd].startf);
+		vcbp->sblk = sav;
 	}
+printf("after count == 0 of b_write what's wrong with blockisze %ld\n",vcbp->sblk);
+uint64_t damit = vcbp->sblk;
+	//copies the caller's buffer byte by byte until the requested count is reached
+	while(readNum < count){
+		farr[fd].fbuffer[farr[fd].fidx] = buffer[readNum];
+		readNum++;			//update how much read
+		farr[fd].fidx++;		//update where we are
+		//writing when the buffer is full
+		if(farr[fd].fidx == damit){
+printf("b4 lbawrite of b_write what's wrong with blockisze %ld\n",vcbp->sblk);
+			uint64_t savev = vcbp->sblk;
+			LBAwrite(farr[fd].fbuffer, 1, farr[fd].startf);
+			vcbp->sblk = savev;
+printf("after lbawrite of b_write what's wrong with blockisze %ld\n",vcbp->sblk);
+		}
 
-	/*//check if we can write to the block at fd
-	if(count >= blksize){gotta allocate more space;}
-	//or
-	if(count <= what's left of the free block){
-		LBAwrite(buffer,1,fd);
-	}*/
+	}	
+vcbp->sblk = damit;
 printf("end of b_write what's wrong with blksize %ld\n",vcbp->sblk);
-	return trk;
+	return (readNum);
 }
 
 int b_seek (int fd, off_t offset, int whence){
@@ -203,10 +212,8 @@ printf("---------inside the b_seek in the b_io.c----------\n");
 
 void b_close (int fd){
 printf("--------inside the b_close in the b_io.c-------\n");
-	if(fiop->fidx > 0){b_write(fd, fiop->fbuffer, 0);}
-	fiop->per = -1; //???? not sure
+	if(farr[fd].bufferdata > 0){b_write(fd, farr[fd].fbuffer, 0);}
+	//fiop->per = -1; //???? not sure
 	//release any unused space?
 	//free(fiop);
 }
-
-

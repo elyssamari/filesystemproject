@@ -52,4 +52,5 @@ void release_free_space(int LBA, int count);
 void allocate_dir();
 uint64_t makede(char*fname, uint64_t idx,uint64_t sz);
 uint64_t createDir(char name [],uint64_t i);
+void getval();
 

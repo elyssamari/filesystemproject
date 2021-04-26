@@ -14,6 +14,7 @@
 #include "VCB.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include <string.h>
 //#include "fsLow.h"
 #include <sys/types.h>
@@ -127,7 +128,11 @@ printf("---------------------------inside the init_VCB_blk----------------------
 }
 
 //init the free space
-
+void getval(){
+	printf("@@@@@@@@@@@@@@@@@@@inside getval what is sroots %ld\n",vcbp->sroots);
+	vcbp-> sroots = vcbp->sroots;
+	
+}
 uint64_t init_free_space(){
 printf("inside the init_free_space\n");
 //printf("what is inside vcbp:\nnumblks %ld\nsizeblk %ld\n",vcbp->nblk, vcbp->sblk);
@@ -166,17 +171,34 @@ if((bytesN/vcbp->sblk)==0){
 //find if there is continous nblksn amount of blocks free for use
 int allocate_free_space(int nblksn){
 printf("------------inside of the allocate free space ----------------------\n");
+printf("%s\n",bitmap);
 	int start = 0;				//track starting block index
 	int lasti = 0;				//track where it left at to get continous blks
 	int count = 0;				//track if the count matches blksneeded
+	for(int v = 0; v < (vcbp->nblk); v++){
+		int widx = log(bitmap[v])/log(2);
 
-	for(int i = 0; i<(vcbp->nblk/8); i++){	//outer loop for index of bitmap
+		start = widx;
+		if(widx < 7){
+			while(nblksn != count){
+				bitmap[v] |= 1 << widx;
+				count++;
+				widx++;
+				if(widx == 7){v++; widx = 0;}
+			}
+		}
+		LBAwrite(bitmap,vcbp -> sffs, vcbp -> sfs);
+printf("########### what is the start given %d\n",start);
+		return start;
+		
+	}
+	/*for(int i = 0; i<(vcbp->nblk/8); i++){	//outer loop for index of bitmap
 		for(int j = 0; j < 8; j++){	//inner loop for index of bitmap[index]
 			if(start == 0){
 				start = (8*i)+j;
 				lasti = i;
 			}
-			if(((bitmap[i] >> j) & 1)==1){	//check if it's been set, if so we don't want it				
+			if((bitmap[i] & (1<<j))!=0){	//check if it's been set, if so we don't want it				
 //printf("Did it check the first 2 bits?");				
 				count = 0;
 				start = 0;
@@ -188,6 +210,7 @@ printf("------------inside of the allocate free space ----------------------\n")
 //setting them to 1 going in reverse.
 //printf("insdie the allocte free space. count == nblksn\n");
 //this is what I intended the set bit to do
+				start = (8*i)+j;
 				int setc = 0;
 				int seti =i;
 				int cc = j;
@@ -209,7 +232,7 @@ printf("-----------------end of successsful allocate free -------------------\n"
 		}
 	}
 printf("-----------------end of unsuccessful allocate free-----------------\n");
-	return 0;				//return 0 if no space or error?
+	return 0;				//return 0 if no space or error?*/
 }
 
 //Dunno if we are actually going to this one
@@ -265,7 +288,7 @@ uint64_t makede(char*fname, uint64_t idx,uint64_t sz){
 			dea[i].loc = idx; 
 			dea[i].ford = 1;
 			dea[i].size = sz;
-			return idx;
+			return i;
 		}
 	}
 	return 0;
@@ -275,7 +298,7 @@ uint64_t makede(char*fname, uint64_t idx,uint64_t sz){
 uint64_t createDir(char *name ,uint64_t i){
 printf("-----------------inside the create directory-----------------------\n");
 	uint64_t wherestart = allocate_free_space(3);
-//printf("after allocate\n");
+printf("+/+/+/+/+/+/what is where start %ld \nafter allocate\n",wherestart);
 	dea = malloc(2*(vcbp->sblk));
 //printf("after malloc of create Dir\n");
 	uint64_t wherestop = (2*(vcbp->sblk))/sizeof(de_t);
@@ -284,8 +307,12 @@ printf("-----------------inside the create directory-----------------------\n");
 //printf("what is wherestop %ld\n",wherestop);
 //printf("b4 the the . and ..\n");
 char*testnull = "NULL\0";
+	
 //printf("name %s | testnull %s\n",name,testnull);
 	if(strcmp(name,testnull)==0){
+		for(int g = 0; g<wherestop; g++){
+			dea[g].size = 0;
+		}
 //printf("Didi i even make it into this if statment in create dir \n");
 	char*child = ".";
 //printf("where seg fault after child?\n");
@@ -321,8 +348,17 @@ char*testnull = "NULL\0";
 		free(ttbb);
 //end of test
 	}else{
-		//find free open 
-		//init
+		for(int i = 0; i<wherestop; i++){
+printf("********************must be here once in the else of dir\n");
+			if(dea[i].size == 0){
+				strcpy(dea[i].dename,name);
+		
+				dea[i].namet = 0x74656d616e726964;
+				dea[i].loc = i; 
+				dea[i].ford = 1;
+				dea[i].size = 1;
+			}
+		}
 	}
 //printf("I don't see the values testing fields\n");
 //printf("name %s | loc %ld | ford %ld |size %ld\n",dea[0].dename,dea[0].loc,dea[0].ford,dea[0].size);

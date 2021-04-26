@@ -163,9 +163,9 @@ int startPartitionSystem (char * filename, uint64_t * volSize, uint64_t * blockS
 			// insure the volume size is a multiple of blockSize
 			uint64_t blockCount = *volSize / blksz;
 			*volSize = blockCount * blksz;
-//printf("before the initializePartition function\n");
+printf("before the initializePartition function\n");
 			int initRet = initializePartition (fd, *volSize, *blockSize);
-//printf("after the initializePartition function\n");
+printf("after the initializePartition function\n");
 			close (fd);
 			}
 		else
@@ -175,28 +175,28 @@ int startPartitionSystem (char * filename, uint64_t * volSize, uint64_t * blockS
 			return -1; 
 			}
 		}
-//printf("before that comment thingy\n");
+printf("before that comment thingy\n");
 	// If there is no access issue or we fall through the if it is because we
 	// have initialized the volume file already
 	fd = open(filename, O_RDWR);
 	partitionInfo_p buf = malloc (MINBLOCKSIZE);
 	uint64_t readCount = read (fd, buf, MINBLOCKSIZE);
-//printf("before the if statement\n");
+printf("before the if statement\n");
 	if ((buf->signature == PART_SIGNATURE) && (buf->signature2 == PART_SIGNATURE2))
 		{
 		*volSize = buf->volumesize;
 		*blockSize = buf->blocksize;
 		partInfop = malloc (sizeof(partitionInfo_t)+strlen(buf->volumeName)+4);
-//printf("before the memcpy\n");
+printf("before the memcpy\n");
 		memcpy(partInfop, buf, sizeof(partitionInfo_t)+strlen(buf->volumeName)+4);
 		partInfop->filename = malloc (strlen(filename)+4);
-//printf("before the strcpy\n");
+printf("before the strcpy\n");
 		strcpy(partInfop->filename, filename);
-//printf("before the fd\n");
+printf("before the fd\n");
 		partInfop->fd = fd;
-//printf("b4 the part-noerror\n");
+printf("b4 the part-noerror\n");
 		retVal = PART_NOERROR;
-//printf("what is the retVal %d\n", retVal);
+printf("what is the retVal %d\n", retVal);
 		}
 	else
 		{
@@ -204,12 +204,12 @@ int startPartitionSystem (char * filename, uint64_t * volSize, uint64_t * blockS
 		*blockSize = 0;
 		retVal = PART_ERR_INVALID;
 		}
-//printf("after the if statement\n");
+printf("after the if statement\n");
 	free (buf);
-//printf("at the if staement towards the end\n");
+printf("at the if staement towards the end\n");
 	if (retVal != PART_NOERROR)
 		close (fd);
-//printf("b4 the return\n");
+printf("b4 the return\n");
 	return retVal;
 	}
 
