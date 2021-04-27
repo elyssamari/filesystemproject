@@ -6,13 +6,15 @@ VCB_p vcbp;
 int fs_mkdir(const char *pathname, mode_t mode){
 printf("insdie the fs_mkdir in mfs.h\n");
 
-	char*hello = "works";
-	//strcpy(hello,pathname);
+printf("what is that pathname %s\n",pathname);
+	char* hello = malloc(80);
+	strcpy(hello,pathname);
 printf("what is the sblk here %ld\n",vcbp->sblk);
 printf("what is going on here?\n why do i get seg faullts\n");
 printf("after strcopy in fs_mkdir\n");
-	//allocate
-	int sucs = makede(hello,1,1);
+	int wh = allocate_free_space(2);
+printf("wherewill it o to %d\n",wh);
+	int sucs = makede(hello,wh,2);
 printf("after the makede in fs_mkdir\n");
 	if(sucs > 0 ){return sucs;}
 	return -1;

@@ -29,13 +29,14 @@ typedef struct VCB{
 	uint64_t sroott;			//words for root dir to see in hexdump
 	uint64_t sroot;				//where does root dir start
 	uint64_t sroots;			//how many possible entries
+	uint64_t srootbs;			//blosk size of rootdir
 	uint64_t sfst;				//words for free space to see in hexdump
 	uint64_t sfs;				//where does free space start
 	uint64_t sffst;				//words for free space size
-	uint64_t sffs;				//size of free space map
+	uint64_t sffs;				//block size of free space map
 	
 }VCB_t, *VCB_p;
-
+//based on the struct provided in the Tuesday lecture 4/13
 typedef struct de{
 	uint64_t ford;				//file (0) or directory (1)
 	uint64_t size;				//size of de
@@ -46,7 +47,7 @@ typedef struct de{
 //#include "fsLow.h"
 extern VCB_p vcbp;
 extern de_t *dea;
-void init_VCB_blk(uint64_t  nblk, uint64_t  sblk);
+int init_VCB_blk(uint64_t  nblk, uint64_t  sblk);
 uint64_t init_free_space();
 int allocate_free_space(int nblksn);
 void set_free_space(int LBA, int count);
@@ -54,5 +55,5 @@ void release_free_space(int LBA, int count);
 void allocate_dir();
 uint64_t makede(char*fname, uint64_t idx,uint64_t sz);
 uint64_t createDir(char name [],uint64_t i);
-void getval();
+int getval();
 

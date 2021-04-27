@@ -706,10 +706,10 @@ int main (int argc, char * argv[])
 	char*sname = "testone";
 	uint64_t rando = 500000;
 	uint64_t randu = 512;
-	startPartitionSystem(sname,&rando, &randu); printf("b4 the getval()\n");getval();
-	//init_VCB_blk(rando, randu);
+	startPartitionSystem(sname,&rando, &randu); //printf("b4 the getval()\n");getval();
+	init_VCB_blk(rando, randu);
 	while (1)
-		{
+		{printf("inside the while of the shell\n");
 		cmdin = readline("Prompt > ");
 #ifdef COMMAND_DEBUG
 		printf ("%s\n", cmdin);

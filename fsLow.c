@@ -38,7 +38,7 @@
 #include <errno.h>
 #include <math.h>
 #include "fsLow.h"
-#include "VCB.h"
+//#include "VCB.h"
 
 // Partition structure.  This is the in-memory structure that is
 // also saved to disk that provides the needed information 
@@ -212,7 +212,7 @@ int startPartitionSystem (char * filename, uint64_t * volSize, uint64_t * blockS
 printf("b4 the return\n");
 	return retVal;
 	}
-int getdval(){printf("inside the getdval()\nwhat is fd %d\n",partInfop->fd);return partInfop->fd; }
+//int getdval(){printf("inside the getdval()\nwhat is fd %d\n",partInfop->fd);return partInfop->fd; }
 int closePartitionSystem ()
 	{
 	fsync(partInfop->fd);
