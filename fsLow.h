@@ -54,7 +54,7 @@ typedef unsigned long long ull_t;
 
 
 int startPartitionSystem (char * filename, uint64_t * volSize, uint64_t * blockSize);
-
+int getdval();
 int closePartitionSystem ();
 
 uint64_t LBAwrite (void * buffer, uint64_t lbaCount, uint64_t lbaPosition);

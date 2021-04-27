@@ -6,9 +6,11 @@
 *
 * File: VCB.h
 *
-* Description: This is a demo to show how to use the fsLow
-* 	routines.
-*
+* Description: this is the header file of the VCB.c.
+*		I didn't know how to share values between
+*		different c files. I had to google it and
+*		learned about extern from stackoverflow. I'm
+*		sorry.
 **************************************************************/
 #include "fsLow.h"
 #define Signu 0x726f766976727553

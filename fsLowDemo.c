@@ -24,13 +24,13 @@
 #include <math.h>
 #include <time.h>
 //#include "fsLow.h"
-#include "VCB.h"
+
 #include "mfs.h"
-#include "b_io.h"
+
 
 int main (int argc, char *argv[])
 	{	
-	/*char * filename;
+	char * filename;
 	uint64_t volumeSize;
 	uint64_t blockSize;
     int retVal;
@@ -51,14 +51,14 @@ int main (int argc, char *argv[])
 //printf("before the init_VCB_blk");
 //printf("why doesn't it print out here?");
 	init_VCB_blk(volumeSize,blockSize);	
-	printf("Opened %s, Volume Size: %llu;  BlockSize: %llu; Return %d\n", filename, (ull_t)volumeSize, (ull_t)blockSize, retVal);*/
+	printf("Opened %s, Volume Size: %llu;  BlockSize: %llu; Return %d\n", filename, (ull_t)volumeSize, (ull_t)blockSize, retVal);
 //b-open test for file already made
-	char * bname = "istest";
-	b_open(bname,1);
+	//char * bname = "istest";
+	//b_open(bname,1);
 //b-read test for file already made
-	char * buf = malloc(512);
-	int rred = b_read(0,buf,512);
-	printf("------------Testing b_read------------\nwhat is returned %d\n%s\n",rred,buf);
+	//char * buf = malloc(512);
+	//int rred = b_read(0,buf,512);
+	//printf("------------Testing b_read------------\nwhat is returned %d\n%s\n",rred,buf);
 //b-write
 	
 //b-close

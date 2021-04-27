@@ -6,9 +6,18 @@
 *
 * File: VCB.c
 *
-* Description: This is a demo to show how to use the fsLow
-* 	routines.
+* Description: this is to init the vcb and other functions
+*		to keep track of data needed in the VCB.
+*Disclaimer, I got the set bit and clear and check bit 
+*from stackoverflow, I'm sorry, my memory of CSC 256 is 
+*a bit fuzzy
+*bitmap[i] |=1<<i;		set
+*bitmap[i] &= ~(1<<i);		clear
+*bitmap[i] & 1<<i;		check, put in if statement
 *
+*I knew how to make a struct but the structs and how I init 
+*them are based on professor's code for the partition in 
+*the fsLow.c, I'm sorry
 **************************************************************/
 //#include <stdint.h>
 #include "VCB.h"
@@ -18,12 +27,7 @@
 #include <string.h>
 //#include "fsLow.h"
 #include <sys/types.h>
-//Disclaimer, I got the set bit and clear and check bit from stackoverflow 
-//bitmap[i] |=1<<i;		set
-//bitmap[i] &= ~(1<<i);		clear
-//bitmap[i] & 1<<i;		check, put in if statement
-
-//the structs are based on professor's code for the partition in the fsLow.c
+#include <unistd.h>
 /*typedef struct VCB{
 	char VCBPrefix[sizeof(H_CAPTION)+2];	//my helpppppp message
 	uint64_t mnum;				//magic number maybe forgot what it was
@@ -129,8 +133,24 @@ printf("---------------------------inside the init_VCB_blk----------------------
 
 //init the free space
 void getval(){
-	printf("@@@@@@@@@@@@@@@@@@@inside getval what is sroots %ld\n",vcbp->sroots);
-	vcbp-> sroots = vcbp->sroots;
+printf("insie the getval\n");
+	int pls = getdval();
+printf("out of teh getdval in the getval\n");
+	VCB_p buff = malloc(512);
+printf("after the malloc b4 read\n");
+	int fr = read(pls,buff,512);
+	vcbp = buff;
+	char * getb = malloc(512);
+	read(pls,getb,512);
+	bitmap = getb;
+	de_t * getd = malloc((vcbp->sroots)*sizeof(de_t));
+	read(pls,getd,((vcbp->sroots)*sizeof(de_t)));
+	dea=getd;
+	printf("@@@@@@@@@@@@@@@@@@@inside getval what is sroots %ld\n",vcbp->sblk);
+	printf("what is the lba i of dea %ld\n",vcbp->sroot);
+	printf("what is size of a dea %ld\n",dea[4].size);
+
+	//printf("what is buff %s\n",buff);
 	
 }
 uint64_t init_free_space(){
@@ -281,13 +301,17 @@ printf("----------end of release free space-----------------\n");
 	}*/
 }
 uint64_t makede(char*fname, uint64_t idx,uint64_t sz){
+printf("what is the sroots %ld\n",vcbp->sroots);
 	for(int i = 0; i<vcbp->sroots; i++){
+printf("if it ain't 0 then wat is it? %ld\n",dea[i].size);
 		if(dea[i].size == 0){
+printf("trying to set a dirctory here n makede\n");
 			strcpy(dea[i].dename,fname);
 			dea[i].namet = 0x74656d616e726964;
 			dea[i].loc = idx; 
 			dea[i].ford = 1;
 			dea[i].size = sz;
+			LBAwrite(dea, 2, vcbp->sroot);
 			return i;
 		}
 	}

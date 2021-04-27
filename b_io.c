@@ -1,6 +1,22 @@
+/**************************************************************
+* Class:  CSC-415
+* Name: Professor Bierman
+* Student ID: N/A
+* Project: Basic File System
+*
+* File: b_io.c
+*
+* Description: the b_io.h functions implemented. For b_read
+*		and b_write, I used the ones from asmt 2 and
+*		5. I was having trouble with the values so I
+*		used some of the things that was given in 
+*		asmt 5.I'm sorry.
+*
+**************************************************************/
+
 #include "b_io.h"
 #include <stdio.h>
-#include "VCB.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
@@ -45,7 +61,7 @@ int b_getfarr (){
 
 int b_open (char * filename, int flags){
 printf("------------------inside the b_open in b_io.c-----------------\n");
-if(party == 1){printf("party is 1. what is sroots %ld\n",vcbp->sroots);getval();}
+if(party == 1){printf("party is 1. what is sroots %ld\n",vcbp->sroots);}
 //need to check if the array is init
 if(started == 0){b_init();}
 printf("after b_init in b-open\n");
@@ -69,7 +85,7 @@ printf("after the start partition system and init_VCB_blk in b-open\n");
 printf("why does it stop here?\n");
 printf("what i sthe sroots %ld\n",vcbp->sroots);
 //need to find filename in directory array
-	for(int i = 0; i < 25; i++){
+	for(int i = 0; i < vcbp->sroots; i++){
 		if(strcmp(dea[i].dename, filename) == 0){
 			farr[idx].didx = i;
 			break;

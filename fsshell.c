@@ -27,7 +27,7 @@
 
 /***************  START LINUX TESTING CODE FOR SHELL ***************/
 #define TEMP_LINUX 0  //MUST be ZERO for working with your file system
-#if (TEMP_LINUX == 0)
+#if (TEMP_LINUX == 1)
 	// All the following it TEMPORARY ONLY - It allows testing the shell in linux
 	// but using the test files system function calls  
 	// This must be off for testing your file system
@@ -166,16 +166,16 @@ int displayFiles (fdDir * dirp, int flall, int fllong)
 	di = fs_readdir (dirp);
 	printf("\n");
 	while (di != NULL) 
-		{
+		{//printf("b4 the if in while in df\n");
 		if ((di->d_name[0] != '.') || (flall)) //if not all and starts with '.' it is hidden
 			{
 			if (fllong)
-				{
+				{//printf("in if in if in while in df\n");
 				fs_stat (di->d_name, &statbuf);
 				printf ("%s    %9ld   %s\n", fs_isDir(di->d_name)?"D":"-", statbuf.st_size, di->d_name);
 				}
 			else
-				{
+				{//printf("in the else in if in while in df\n");
 				printf ("%s\n", di->d_name);
 				}
 			}
@@ -224,7 +224,7 @@ printf("Inside cmd_ls in fsshell\n");
 #endif
 	fllong = 0;
 	flall = 0;
-
+printf("b4 the while in ls \n");
 	while (1)
 		{	
 		c = getopt_long(argcnt, argvec, "alh",
@@ -232,7 +232,7 @@ printf("Inside cmd_ls in fsshell\n");
 				
 		if (c == -1)
 		   break;
-
+printf("b4 the switch in the ls\n");
 		switch (c) {
 			case 0:			//flag was set, ignore
 			   printf("Unknown option %s", long_options[option_index].name);
@@ -257,9 +257,9 @@ printf("Inside cmd_ls in fsshell\n");
 			}
 		}
 	
-	
+printf("b4 the if(optind < argcnt) in the ls\n");	
 	if (optind < argcnt)
-		{
+		{printf("in te if of the ls\n");
 		//processing arguments after options
 		for (int k = optind; k < argcnt; k++)
 			{
@@ -284,7 +284,7 @@ printf("Inside cmd_ls in fsshell\n");
 			}		
 		}
 	else   // no pathname/filename specified - use cwd
-		{
+		{printf("in the else of the ls\n");
 		char * path = fs_getcwd(cwd, DIRMAX_LEN);	//get current working directory
 		fdDir * dirp;
 		dirp = fs_opendir (path);
@@ -515,6 +515,12 @@ int cmd_cd (int argcnt, char *argvec[])
 	int ret = fs_setcwd (path);
 	if (ret != 0)	//error
 		{
+//testing
+//uint64_t nullv = 0;
+//int exists = startPartitionSystem(path, &nullv, &nullv);
+//if(exists == 0){printf("inside the testing of the cd\n");}
+//not sure how to change the prompt/path
+//testing end
 		printf ("Could not change path to %s\n", path);
 		return (ret);
 		}			
@@ -697,7 +703,11 @@ int main (int argc, char * argv[])
 		
 	using_history();
 	stifle_history(200);	//max history entries
-	
+	char*sname = "testone";
+	uint64_t rando = 500000;
+	uint64_t randu = 512;
+	startPartitionSystem(sname,&rando, &randu); printf("b4 the getval()\n");getval();
+	//init_VCB_blk(rando, randu);
 	while (1)
 		{
 		cmdin = readline("Prompt > ");

@@ -19,7 +19,7 @@
 #include <time.h>
 
 #include "b_io.h"
-
+#include "VCB.h"
 #include <dirent.h>
 #define FT_REGFILE	DT_REG
 #define FT_DIRECTORY DT_DIR
@@ -47,6 +47,7 @@ typedef struct
 	unsigned short  d_reclen;		/*length of this record */
 	unsigned short	dirEntryPosition;	/*which directory entry position, like file pos */
 	uint64_t	directoryStartLocation;		/*Starting LBA of directory */
+	int gup;
 	} fdDir;
 
 
