@@ -188,10 +188,10 @@ printf("what is v %d\n what is widx %d\n",v,widx);
 		
 	}
 printf("what is sfs %ld and sffs %ld\n",vcbp->sfs, vcbp->sffs);
-if(start > 3){printf("what id dea size %ld\n",dea[4].size);}
+//if(start > 3){printf("what id dea size %ld\n",dea[4].size);}
 		LBAwrite(bitmap,vcbp -> sffs, vcbp -> sfs);
 printf("what is sfs %ld and sffs %ld\n",vcbp->sfs, vcbp->sffs);
-if(start > 3){printf("what id dea size %ld\n",dea[4].size);}
+//if(start > 3){printf("what id dea size %ld\n",dea[4].size);}
 printf("########### what is the start given %d\n",start);
 		return start;
 }
@@ -238,7 +238,7 @@ printf("-------------start of release free space ----------------\n");
 printf("----------end of release free space-----------------\n");
 }
 
-uint64_t makede(char*fname, uint64_t idx,uint64_t sz){
+uint64_t makede(char*fname, uint64_t idx,uint64_t sz,uint64_t fod){
 printf("what is the sroots %ld\n",vcbp->sroots);
 	for(int i = 0; i<vcbp->sroots; i++){
 printf("if it ain't 0 then wat is it? %ld\n",dea[i].size);
@@ -247,7 +247,7 @@ printf("trying to set a dirctory here n makede\n");
 			strcpy(dea[i].dename,fname);
 			dea[i].namet = 0x74656d616e726964;
 			dea[i].loc = idx; 
-			dea[i].ford = 1;
+			dea[i].ford = fod;
 			dea[i].size = sz;
 			LBAwrite(dea, 2, vcbp->sroot);
 			return i;

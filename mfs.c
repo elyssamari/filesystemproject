@@ -3,20 +3,20 @@
 #include <stdlib.h>
 #include <string.h>
 VCB_p vcbp;
-
+char*curdir;
 //what is mode?
 int fs_mkdir(const char *pathname, mode_t mode){
 printf("----------------insdie the fs_mkdir in mfs.h----------------\n");
 
 printf("what is that pathname %s\n",pathname);
-	char* hello = malloc(80);
+	char* hello = malloc(8);
 	strcpy(hello,pathname);
 //printf("what is the sblk here %ld\n",vcbp->sblk);
 //printf("what is going on here?\n why do i get seg faullts\n");
 //printf("after strcopy in fs_mkdir\n");
 	int wh = allocate_free_space(2);
 //printf("wherewill it o to %d\n",wh);
-	int sucs = makede(hello,wh,2);
+	int sucs = makede(hello,wh,2,1);
 //printf("after the makede in fs_mkdir\n");
 	if(sucs > 0 ){return sucs;}
 	return -1;
@@ -29,11 +29,12 @@ int fs_rmdir(const char *pathname){
 	for(int i = 0; i<vcbp->sroots; i++){
 
 		if(strcmp(pathname,dea[i].dename)==0){
-			
-			fdr->d_reclen = dea[i].size;
-			fdr->dirEntryPosition = i;
-			fdr->directoryStartLocation = dea[i].loc;
-			fdr->gup = 0;
+			release_free_space(dea[i].loc, dea[i].size);
+			dea[i].ford = 0;
+			dea[i].size = 0;
+			dea[i].loc = 0;
+			strcpy(dea[i].dename,"        ");
+			LBAwrite(dea, vcbp->srootbs, vcbp->sroot);
 		}
 	}
 	return 0;
@@ -86,14 +87,29 @@ int fs_closedir(fdDir *dirp){
 }
 
 char * fs_getcwd(char *buf, size_t size){
-	if(strcmp(buf,"")==0){buf = ".";}
-	//buf = "istest";
-	return buf;
+	printf("inside fs_getcwd\n");
+	printf("what is curdir %s\n",curdir);
+	//if(strcmp(buf,"")==0){buf = ".";}
+	//strcpy(curdir,buf);
+	return curdir;
 }
 
 int fs_setcwd(char *buf){   //linux chdir
+	printf("inside fs_setcwd\n");
+	printf("what is buf in fs_setcwd %s\n",buf);
+	//printf("what is FT_LINK in fs_setcwd %d\n",FT_LINK);
+	//printf("what is FT_REGFILE in fs_setcwd %d\n",FT_REGFILE);
+	//printf("what is FT_DIRECTORY in fs_setcwd %d\n",FT_DIRECTORY);
+	//curdir = buf;
+	strcpy(curdir,buf);
+	printf("what is curdir %s\n",curdir);
+	for(int i = 0; i<vcbp->sroots; i++){
 
-return 0;
+		if(strcmp(buf,dea[i].dename)==0){
+			return 0;
+		}
+	}
+return -1;
 }
 
 //prob good
@@ -126,8 +142,20 @@ printf("what is vcbp in fs_isDir %ld\n",vcbp->sroots);
 
 int fs_delete(char* filename){	//removes a file
 	//release
+	for(int i = 0; i<vcbp->sroots; i++){
+
+		if(strcmp(filename,dea[i].dename)==0){
+			release_free_space(dea[i].loc, dea[i].size);
+			dea[i].ford = 0;
+			dea[i].size = 0;
+			dea[i].loc = 0;
+			strcpy(dea[i].dename,"        ");
+			LBAwrite(dea, vcbp->srootbs, vcbp->sroot);
+		}
+	}
 	return 0;
 }
 int fs_stat(const char *path, struct fs_stat *buf){
+
 	return 0;
 }

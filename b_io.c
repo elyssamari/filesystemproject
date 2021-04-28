@@ -92,7 +92,7 @@ printf("what i sthe sroots %ld\n",vcbp->sroots);
 		}
 		if((i+1)  == vcbp->sroots){
 			farr[idx].startf = allocate_free_space(1);
-			farr[idx].didx = makede(filename,farr[idx].startf,1);
+			farr[idx].didx = makede(filename,farr[idx].startf,1,0);
 		}
 	}
 printf("after the for loop to find matching filename in b-open\n");

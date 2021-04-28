@@ -700,14 +700,18 @@ int main (int argc, char * argv[])
 	char * cmdin;
 	char * cmd;
 	HIST_ENTRY *he;
-		
+	if(argc < 4){printf("Usage: ./fsshell volumeName volumeSize blockSize\n");return 0;}
 	using_history();
 	stifle_history(200);	//max history entries
-	char*sname = "testone";
-	uint64_t rando = 500000;
-	uint64_t randu = 512;
+	
+	char*sname = argv[1];
+	uint64_t rando = atoll(argv[2]);
+	uint64_t randu = atoll(argv[3]);
 	startPartitionSystem(sname,&rando, &randu); //printf("b4 the getval()\n");getval();
 	init_VCB_blk(rando, randu);
+	curdir = malloc(100);
+	strcpy(curdir,".");
+	
 	while (1)
 		{printf("inside the while of the shell\n");
 		cmdin = readline("Prompt > ");
