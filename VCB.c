@@ -44,7 +44,7 @@ int init_VCB_blk(uint64_t  nblk, uint64_t  sblk){
 printf("---------------------------inside the init_VCB_blk------------------------\n");
 	int nd = getval();
 	if(nd == 1){printf("end early already init-ed\n");return 0;}
-	vcbp = malloc(sblk);			//vcb is size of one block
+	//vcbp = malloc(sblk);			//vcb is size of one block
 	
 	
 	strcpy(vcbp -> VCBPrefix, H_CAPTION);		//all -> is setting stuff
@@ -66,13 +66,14 @@ printf("---------------------------inside the init_VCB_blk----------------------
 	vcbp -> signu = Signu;
 	vcbp -> sffst = 0x657a697365657266;
 	
-	
+printf("writing at vcbp\n");
 	LBAwrite(vcbp, 1, 0);		//writing the vcb, that's the red rectangle I have been
 					//screenshotting
 //printf("what is in dea[0] %s, %ld\n dea[1] %s, %ld\n",dea[0]->name,dea[0]->loc, dea[1]->name,dea[1]->loc);
 	//free(vcbp);			//free the buffers
 	//free(bitmap);
 	//free(dea);
+printf("what is bitmap in initvcb %s\n",bitmap);
 	printf("endd late. was not init-ed\n");
 	return 0;
 					//I should be freeing everything here right?
@@ -88,32 +89,37 @@ int getval(){
 printf("insie the getval\n");
 	//int pls = getdval();
 //printf("out of teh getdval in the getval\n");
-	VCB_p buff = malloc(512);
+	vcbp = malloc(512);
 //printf("after the malloc b4 read\n");
-	uint64_t fr = LBAread(buff,1,0);
-	if(buff->signu == 0){
-		free(buff);
+	uint64_t fr = LBAread(vcbp,1,0);
+	if(vcbp->signu == 0){
+		//free(vcbp);
 		return 0;
 	}
-	if(buff->signu==Signu){
-		vcbp = malloc(buff->sblk);
-		vcbp = buff;
+	if(vcbp->signu==Signu){
+		//vcbp = malloc(buff->sblk);
+		//vcbp = buff;
 
-		char * getb = malloc((vcbp->sblk)*(vcbp->sffs));
-		LBAread(getb,vcbp->sffs,vcbp->sfs);
-		bitmap = malloc((vcbp->sblk)*(vcbp->sffs));
-		bitmap = getb;
-		strcpy(bitmap,getb);
+		bitmap = (char*)calloc(((vcbp->sffs)*(vcbp->sblk)),sizeof(char));
+		//char * getb = malloc((vcbp->sblk)*(vcbp->sffs));
+		//char*getb = (char*)calloc((blksneed*(vcbp->sblk)),sizeof(char));
+		LBAread(bitmap,vcbp->sffs,vcbp->sfs);
+		//bitmap = malloc((vcbp->sblk)*(vcbp->sffs));
+		//bitmap = getb;
+		//memcpy(bitmap,getb,((vcbp->sblk)*(vcbp->sffs)));
 
-		de_t * getd = malloc((vcbp->sblk) * (vcbp->srootbs));
-		LBAread(getd,vcbp->srootbs,vcbp->sroot);
-		dea = malloc((vcbp->sblk) * (vcbp->srootbs));
-		memcpy(dea,getd,(vcbp->sblk) * (vcbp->srootbs));
+		//de_t * getd = malloc((vcbp->sblk) * (vcbp->srootbs));
+		dea = malloc(2*(vcbp->sblk));
+		LBAread(dea,vcbp->srootbs,vcbp->sroot);
+		//dea = malloc((vcbp->sblk) * (vcbp->srootbs));
+		//memcpy(dea,getd,(vcbp->sblk) * (vcbp->srootbs));
 		
-		free(buff);free(getb);free(getd);
+		
 		printf("@@@@@@@@@@@@@@@@@@@inside getval what is sroots %ld\n",vcbp->sblk);
 		printf("what is the lba i of dea %ld\n",vcbp->sroot);
-		printf("what is size of a dea %ld\n",dea[4].size);	
+		printf("what is the sfs %ld\n",vcbp->sfs);
+		printf("what is size of a dea %ld\n",dea[4].size);
+		printf("what is bitmap in the getval %s\n",bitmap);	
 		
 		return 1;
 	}
@@ -137,12 +143,18 @@ printf("inside the init_free_space\n");
 
 	bitmap = (char*)calloc((blksneed*(vcbp->sblk)),sizeof(char));
 
+	for(int j = 0; j< (bytesN); j++){
+		for(int k = 0; k < 8; k++){
+			bitmap[j] |= 0 << k;
+		}
+	}
+
 	for(int i = 0; i<=blksneed+1; i++){
 
 		bitmap[0] |= 1<<i;
 		
 	}
-	
+printf("writing at bitmap\n");
 	uint64_t wrote = LBAwrite(bitmap,blksneed,1); //write the bitmap
 
 	return (wrote);				//I'm not sure what it should return
@@ -158,6 +170,7 @@ printf("%s\n",bitmap);
 	int lasti = 0;				//track where it left at to get continous blks
 	int count = 0;				//track if the count matches blksneeded
 	for(int v = 0; v < (vcbp->nblk); v++){
+printf("howmmany times do the for loop run.? %d\n",v);
 		int widx = log(bitmap[v])/log(2);
 
 		start = widx;
@@ -170,6 +183,10 @@ printf("what is v %d\n what is widx %d\n",v,widx);
 				if(widx == 7){v++; widx = 0;}
 			}
 		}
+		if(nblksn == count){break;}
+
+		
+	}
 printf("what is sfs %ld and sffs %ld\n",vcbp->sfs, vcbp->sffs);
 if(start > 3){printf("what id dea size %ld\n",dea[4].size);}
 		LBAwrite(bitmap,vcbp -> sffs, vcbp -> sfs);
@@ -177,8 +194,6 @@ printf("what is sfs %ld and sffs %ld\n",vcbp->sfs, vcbp->sffs);
 if(start > 3){printf("what id dea size %ld\n",dea[4].size);}
 printf("########### what is the start given %d\n",start);
 		return start;
-		
-	}
 }
 
 //Dunno if we are actually going to this one
@@ -199,7 +214,7 @@ void set_free_space(int LBA, int count){
 			idx++;			//update idx to match the new inneridx
 		}
 	}
-	uint64_t wroten = LBAwrite(bitmap,vcbp->sffs,vcbp->sfs);
+	//uint64_t wroten = LBAwrite(bitmap,vcbp->sffs,vcbp->sfs);
 	
 }
 
