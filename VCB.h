@@ -43,7 +43,7 @@ typedef struct de{
 	uint64_t loc;				//where is de
 	uint64_t namet;				//to see name on hexdump
 	char  dename [8];			//name of de
-	char path[8];
+	char currentDir[8];
 
 } de_t, *de_p;
 
@@ -56,7 +56,7 @@ int allocate_free_space(int nblksn);						//allocate_free_space in VCB.c
 void set_free_space(int LBA, int count);					//set_free_space in VCB.c
 void release_free_space(int LBA, int count);					//release_free_space in VCB.c
 void allocate_dir();								
-uint64_t makede(char*fname, uint64_t index,uint64_t sz,uint64_t fod, char*path);	//makede in VCB.c
+uint64_t makede(char*fname, uint64_t index,uint64_t sz,uint64_t fod, char*currentDir);	//makede in VCB.c
 uint64_t createDir(char name [],uint64_t i);					//createDir in VCB.c
 int getval(); 									//getval in VCB.c
 

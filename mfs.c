@@ -3,25 +3,27 @@
 #include <stdlib.h>
 #include <string.h>
 VCB_p vcbp;
-char*curdir; //what is mode?
-char currentPath[100]=".";
+char currentDir[100]=".";
 int count = 0;
+int c = 0;
 
 int fs_mkdir(const char *pathname, mode_t mode){
 	printf("----------------inside the fs_mkdir in mfs.h----------------\n");
 	printf("Pathname: %s\n",pathname);
+	
+	for(int i = 0; i<vcbp->sroots; i++){
+		if (strcmp(currentDir,dea[i].currentDir)==0 && strcmp(pathname, dea[i].dename)==0){
+			printf("Directory name already exists in this current working directory.\n");
+			return -1;
+		}
+	}
+
 	char* pname = malloc(8);
 	strcpy(pname,pathname);
-	//printf("what is the sblk here %ld\n",vcbp->sblk);
-	//printf("what is going on here?\n why do i get seg faullts\n");
-	//printf("after strcopy in fs_mkdir\n");
 	int free_space = allocate_free_space(2); //was wh
-	//printf("wherewill it o to %d\n",free_space);
-	int entry = makede(pname,free_space,2,1,currentPath);
-	//printf("after the makede in fs_mkdir\n");
-	
+	int entry = makede(pname,free_space,2,1,currentDir);	
 	if(entry > 0 ){
-	return entry;
+		return entry;
 	}
 	return -1;
 }
@@ -43,13 +45,12 @@ int fs_rmdir(const char *pathname){
 	return 0;
 }
 
-//Progress: not sure
 fdDir * fs_opendir(const char *name){
 	printf("---------------inside the fs_opendir----------------\n");
     	fdDir * fdr = malloc(sizeof(fdDir));
     
 	for(int i = 0; i<vcbp->sroots; i++){
-        	if (strcmp(currentPath,dea[i].path)==0){
+        	if (strcmp(currentDir,dea[i].currentDir)==0){
             	   fdr->d_reclen = dea[i].size;
             	   fdr->dirEntryPosition = i;
             	   fdr->directoryStartLocation = dea[i].loc;
@@ -69,16 +70,16 @@ struct fs_diriteminfo *fs_readdir(fdDir *dirp){
 	dinfo -> fileType = 'd';
 	strcpy(dinfo -> d_name, dea[dirp->location[cnt]].dename);
    
-	if (count < cnt && strcmp(currentPath,".")==0){
-           dinfo = NULL;
-           count =0;
-           cnt = 0;
-    	} else if (count <= cnt && strcmp(currentPath,".")!=0) {
-          dinfo = NULL;
-          count =0;
-          cnt = 0;
+	if (count < cnt && strcmp(currentDir,".")==0){
+		dinfo = NULL;
+		count =0;
+		cnt = 0;
+    	} else if (count <= cnt && strcmp(currentDir,".")!=0) {
+		dinfo = NULL;
+		count =0;
+		cnt = 0;
     	} else{
-          cnt++;
+		cnt++;
    	}
 
     return dinfo;
@@ -93,26 +94,56 @@ int fs_closedir(fdDir *dirp){
 }
 
 char * fs_getcwd(char *buf, size_t size){
-	return currentPath;
+	return currentDir;
 }
 
-int fs_setcwd(char *buf){   //linux chdir
+int fs_setcwd(char *buf){   
 	int retVal = -1;
-    
-	for(int i = 0; i<vcbp->sroots; i++){
-        	if (strcmp(currentPath,dea[i].path)==0 && strcmp(buf, dea[i].dename)==0){
-            	   retVal = 0;
-        }
-    }
+	char path[100];
+	char *parameters[100];
+	int count = 0;
+	if (strcmp(buf,"..")==0 && (currentDir,".")!=0){
+		char * split = strtok(currentDir, "/");
+		while (split != NULL) {
+			parameters[count++] = strdup(split);
+			split = strtok(NULL, "/");
+		}
 
-    	if (retVal == 0){
-           char * str3 = (char *) malloc(2 + strlen(currentPath)+ strlen(buf) );
-           strcpy(str3, currentPath);
-           strcat(str3, "/");
-           strcat(str3, buf);
-           strcpy(currentPath, str3);
-        }
-    return retVal;
+		for (int i = 0; i != count-1; i++) {
+			if (i==0){
+				strcpy(path, parameters[i]);
+			}
+			if(i!=0 && count != 2 && i!=count-1){
+  				strcat(path, "/");
+				strcat(path, parameters[i]);
+			}
+
+			
+		}
+		strcpy(currentDir, path);
+		return 0;
+	}
+
+	if (strcmp(buf,".")==0){
+		return 0;
+	}
+
+	for(int i = 0; i<vcbp->sroots; i++){
+		if(strcmp(currentDir,dea[i].currentDir)==0 && strcmp(buf, dea[i].dename)==0){
+			retVal = 0;
+		}
+	}
+
+	if (retVal == 0){
+      		char * str3 = (char *) malloc(2 + strlen(currentDir)+ strlen(buf) );
+  		strcpy(str3, currentDir);
+  		strcat(str3, "/");
+      		strcat(str3, buf);
+		strcpy(currentDir, str3);
+		return 0;
+	}
+
+	return retVal;
 }
 
 //Progress: good

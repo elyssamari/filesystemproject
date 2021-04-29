@@ -252,7 +252,7 @@ void release_free_space(int LBA, int count){
 	printf("--------------end of release free space-----------------\n");
 }
 
-uint64_t makede(char*fname, uint64_t index,uint64_t sz,uint64_t fod, char *path){
+uint64_t makede(char*fname, uint64_t index,uint64_t sz,uint64_t fod, char *currentDir){
 	printf("Sroots: %ld\n",vcbp->sroots);
 
 	for (int i = 0; i<vcbp->sroots; i++){
@@ -264,7 +264,7 @@ uint64_t makede(char*fname, uint64_t index,uint64_t sz,uint64_t fod, char *path)
                    dea[i].loc = index; 			//location of directory entry
                    dea[i].ford = fod;			//file (0) or directory (1)
                    dea[i].size = sz;			//size of directory entry
-                   strcpy(dea[i].path, path);
+                   strcpy(dea[i].currentDir, currentDir);
                    LBAwrite(dea, 2, vcbp->sroot);
             	   return i;
         	}
