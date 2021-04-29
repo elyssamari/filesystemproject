@@ -42,7 +42,7 @@
 	
 	
 	fdDir * fs_opendir(const char *name)
-		{printf("inside fs_opendir in fsshell\n");
+		{printf("---------------------------inside the fs_opendir in fsshell------------------------\n");
 		DIR * dir;
 		dir = opendir(name);
 		return ((fdDir *) dir);
@@ -50,7 +50,7 @@
 	
 	struct fs_diriteminfo fsDi;	
 	struct fs_diriteminfo *fs_readdir(fdDir *dirp)
-		{printf("inside ds_readdir in fsshell\n");
+		{printf("-------------------------inside ds_readdir in fshell-----------------------\n");
 		DIR *dir;
 		dir = (DIR *) dirp;
 		struct dirent * de;
@@ -73,7 +73,7 @@
 		}
 
 	int fs_stat(const char *path, struct fs_stat *buf)
-		{printf("inside fs_stat in fsshell\n");
+		{printf("----------------------------inside fs_stat in fshell--------------------------\n");
 		struct stat * path_stat;
 		path_stat = (struct stat *) buf;
 		return (stat (path, path_stat));
@@ -81,14 +81,14 @@
 
 	
 	int fs_isFile (char * path)
-		{printf("inside fs_isFile in fsshell\n");
+		{printf("----------------------inside fs_isFile in fsshell-------------------------\n");
 		struct stat path_stat;
 		stat(path, &path_stat);
 		return S_ISREG(path_stat.st_mode);
 		}
 	
 	int fs_isDir (char * path)
-		{printf("inside fs_isDir in fsshell\n");
+		{printf("------------------------inside fs_isDir in fsshell-------------------------\n");
 		struct stat path_stat;
 		if (stat(path, &path_stat) != 0)
 			return 0;
@@ -155,7 +155,7 @@ static int dispatchcount = sizeof (dispatchTable) / sizeof (dispatch_t);
 
 // Display files for use by ls command
 int displayFiles (fdDir * dirp, int flall, int fllong)
-	{printf("inside displayFiles in fsshell\n");
+	{printf("---------------------------inside displayFiles in fsshell----------------------------\n");
 #if (CMDLS_ON == 1)				
 	if (dirp == NULL)	//get out if error
 		return (-1);
@@ -198,7 +198,7 @@ int cmd_ls (int argcnt, char *argvec[])
 	int fllong;
 	int flall;
 	char cwd[DIRMAX_LEN];
-printf("Inside cmd_ls in fsshell\n");
+	printf("-----------------------inside cmd_ls in fsshell---------------------------------\n");
 	static struct option long_options[] = 
 		{
 			/* These options set their assigned flags to value and return 0 */
@@ -224,15 +224,15 @@ printf("Inside cmd_ls in fsshell\n");
 #endif
 	fllong = 0;
 	flall = 0;
-printf("b4 the while in ls \n");
+	printf("------------------------before the while in ls -----------------------\n");
 	while (1)
-		{	
+		{
 		c = getopt_long(argcnt, argvec, "alh",
 				long_options, &option_index);
 				
 		if (c == -1)
 		   break;
-printf("b4 the switch in the ls\n");
+		   printf("Before the switch in the ls\n");
 		switch (c) {
 			case 0:			//flag was set, ignore
 			   printf("Unknown option %s", long_options[option_index].name);
@@ -257,9 +257,9 @@ printf("b4 the switch in the ls\n");
 			}
 		}
 	
-printf("b4 the if(optind < argcnt) in the ls\n");	
+printf("-------------------before the if(optind < argcnt) in the ls--------------------------\n");
 	if (optind < argcnt)
-		{printf("in te if of the ls\n");
+		{printf("----------------inside if of the ls--------------------------------\n");
 		//processing arguments after options
 		for (int k = optind; k < argcnt; k++)
 			{
@@ -284,7 +284,7 @@ printf("b4 the if(optind < argcnt) in the ls\n");
 			}		
 		}
 	else   // no pathname/filename specified - use cwd
-		{printf("in the else of the ls\n");
+		{printf("--------------in the else of the ls----------------------------\n");
 		char * path = fs_getcwd(cwd, DIRMAX_LEN);	//get current working directory
 		fdDir * dirp;
 		dirp = fs_opendir (path);
@@ -301,7 +301,7 @@ printf("b4 the if(optind < argcnt) in the ls\n");
 ****************************************************/
 	
 int cmd_cp (int argcnt, char *argvec[])
-	{printf("inside cmd_cp in fsshell\n");
+	{printf("----------------------inside cmd_cp in fsshell-------------------------\n");
 #if (CMDCP_ON == 1)	
 	int testfs_src_fd;
 	int testfs_dest_fd;
@@ -377,7 +377,7 @@ int cmd_md (int argcnt, char *argvec[])
 *  Remove directory or file commmand
 ****************************************************/
 int cmd_rm (int argcnt, char *argvec[])
-	{printf("inside cmd_rm in fsshell\n");
+	{printf("----------------------inside cmd_rm in fsshell------------------------\n");
 #if (CMDRM_ON == 1)
 	if (argcnt != 2)
 		{
@@ -406,7 +406,7 @@ int cmd_rm (int argcnt, char *argvec[])
 *  Copy file from test file system to Linux commmand
 ****************************************************/
 int cmd_cp2l (int argcnt, char *argvec[])
-	{printf("inside cmd_cp2l in fsshell\n");
+	{printf("-----------------------------inside cmd_cp2l in fsshell------------------------------\n");
 #if (CMDCP2L_ON == 1)				
 	int testfs_fd;
 	int linux_fd;
@@ -450,7 +450,7 @@ int cmd_cp2l (int argcnt, char *argvec[])
 *  Copy file from Linux to test file system commmand
 ****************************************************/
 int cmd_cp2fs (int argcnt, char *argvec[])
-	{printf("inside cmd_cp2fs in fsshell\n");
+	{printf("----------------------------------inside cmd_cp2fs in fsshell-------------------\n");
 #if (CMDCP2FS_ON == 1)				
 	int testfs_fd;
 	int linux_fd;
@@ -494,7 +494,7 @@ int cmd_cp2fs (int argcnt, char *argvec[])
 *  cd commmand
 ****************************************************/
 int cmd_cd (int argcnt, char *argvec[])
-	{printf("inside cmd_cd in fsshell \n");
+	{printf("------------------------------------inside cmd_cd in fsshell ------------------------------\n");
 #if (CMDCD_ON == 1)	
 	if (argcnt != 2)
 		{
@@ -698,22 +698,25 @@ void processcommand (char * cmd)
 int main (int argc, char * argv[])
 	{
 	char * cmdin;
-	char * cmd;
-	HIST_ENTRY *he;
-	if(argc < 4){printf("Usage: ./fsshell volumeName volumeSize blockSize\n");return 0;}
-	using_history();
-	stifle_history(200);	//max history entries
-	
-	char*sname = argv[1];
-	uint64_t rando = atoll(argv[2]);
-	uint64_t randu = atoll(argv[3]);
-	startPartitionSystem(sname,&rando, &randu); //printf("b4 the getval()\n");getval();
-	init_VCB_blk(rando, randu);
-	curdir = malloc(100);
-	strcpy(curdir,".");
-	
+        char * cmd;
+        HIST_ENTRY *he;
+    	if(argc < 4){printf("Usage: ./fsshell volumeName volumeSize blockSize\n");return 0;}
+    	using_history();
+    	stifle_history(200);    //max history entries
+
+   	char * filename;
+    	uint64_t volumeSize;
+    	uint64_t blockSize;
+
+    	filename = argv[1];
+    	volumeSize = atoll (argv[2]);
+    	blockSize = atoll (argv[3]);
+
+    	startPartitionSystem (filename, &volumeSize, &blockSize);
+    	init_VCB_blk(volumeSize,blockSize);
+
 	while (1)
-		{printf("inside the while of the shell\n");
+		{printf("-----------------------------inside the while of the shell---------------------\n\n");
 		cmdin = readline("Prompt > ");
 #ifdef COMMAND_DEBUG
 		printf ("%s\n", cmdin);

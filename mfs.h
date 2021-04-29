@@ -32,7 +32,7 @@ typedef u_int64_t uint64_t;
 typedef u_int32_t uint32_t;
 #endif
 
-extern int party;
+extern int var;
 extern char * curdir;
 struct fs_diriteminfo
 	{
@@ -48,7 +48,8 @@ typedef struct
 	unsigned short  d_reclen;		/*length of this record */
 	unsigned short	dirEntryPosition;	/*which directory entry position, like file pos */
 	uint64_t	directoryStartLocation;		/*Starting LBA of directory */
-	int gup;
+	int location[250];
+	int increment;
 	} fdDir;
 
 

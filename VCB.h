@@ -14,12 +14,11 @@
 **************************************************************/
 #include "fsLow.h"
 #define Signu 0x726f766976727553
-
-#define H_CAPTION "Please save me. I need helppppppppppppppppppppppppppp\n\n"
-
+#define H_CAPTION "Message Test: Hello World this is the group Survivors\n\n"	//Message Test
 #define tblk "Hello there, this is a test to test the b_read function in b_io.c. It is 512. The following is randomness. This world is so sad. What are supposed to do? How can we save this world? Why can the rich and powerful do what they want while the rest of us feel the impact of their choices? Why do we have people who deny the facts just because it is against their religion? How are we supposed to move forward when we are so divided? In the end, it will be too late. Never gonna give you up, never gonna let you down."
+
 typedef struct VCB{
-	char VCBPrefix[sizeof(H_CAPTION)+2];	//my helpppppp message
+	char VCBPrefix[sizeof(H_CAPTION)+2];	//Message Test
 	uint64_t mnum;				//magic number maybe forgot what it was
 	uint64_t signu;				//signature forgot what it was
 	uint64_t nblkt;				//words for num of blocks to see in hexdump
@@ -35,7 +34,8 @@ typedef struct VCB{
 	uint64_t sffst;				//words for free space size
 	uint64_t sffs;				//block size of free space map
 	
-}VCB_t, *VCB_p;
+} VCB_t, *VCB_p;
+
 //based on the struct provided in the Tuesday lecture 4/13
 typedef struct de{
 	uint64_t ford;				//file (0) or directory (1)
@@ -43,17 +43,20 @@ typedef struct de{
 	uint64_t loc;				//where is de
 	uint64_t namet;				//to see name on hexdump
 	char  dename [8];			//name of de
-}de_t, *de_p;
+	char path[8];
+
+} de_t, *de_p;
+
 //#include "fsLow.h"
-extern VCB_p vcbp;
-extern de_t *dea;
-int init_VCB_blk(uint64_t  nblk, uint64_t  sblk);
-uint64_t init_free_space();
-int allocate_free_space(int nblksn);
-void set_free_space(int LBA, int count);
-void release_free_space(int LBA, int count);
-void allocate_dir();
-uint64_t makede(char*fname, uint64_t idx,uint64_t sz,uint64_t fod);
-uint64_t createDir(char name [],uint64_t i);
-int getval();
+extern VCB_p vcbp;								//VCB_p vcbp = NULL in VCB.c
+extern de_t *dea;								//de_t * dea = NULL in VCB.c
+int init_VCB_blk(uint64_t  nblk, uint64_t  sblk);				//init_VCB_blk in VCB.c
+uint64_t init_free_space();							//init_free_space in VCB.c
+int allocate_free_space(int nblksn);						//allocate_free_space in VCB.c
+void set_free_space(int LBA, int count);					//set_free_space in VCB.c
+void release_free_space(int LBA, int count);					//release_free_space in VCB.c
+void allocate_dir();								
+uint64_t makede(char*fname, uint64_t index,uint64_t sz,uint64_t fod, char*path);	//makede in VCB.c
+uint64_t createDir(char name [],uint64_t i);					//createDir in VCB.c
+int getval(); 									//getval in VCB.c
 
