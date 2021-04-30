@@ -82,20 +82,6 @@ int b_open (char * filename, int flags){
 	}
 
 	printf("after the b_getfarr in b-open\n");
-	//need to make sure Partition is started
-	char * sname = "testone";
-	uint64_t vsize = 500000;
-	uint64_t bsize = 512;
-
-	if (var == 0 ){
-	   int istart = startPartitionSystem(sname, &vsize, &bsize);
-		if (istart != 0){
-		   printf("unable to open\n"); return -1;}
-	     	   init_VCB_blk(vsize,bsize);
-		   var = 1;
-		} else {
-		  printf("what is sroots %ld\n",vcbp->sroots);
-		}
 
 		printf("after the start partition system and init_VCB_blk in b-open\n");
 		printf("why does it stop here?\n");
@@ -267,7 +253,28 @@ int b_write (int fd, char * buffer, int count){
 int b_seek (int fd, off_t offset, int whence){
 	printf("---------inside the b_seek in the b_io.c----------\n");
 	//not sure about this since we only used this like once
-	return 0;
+
+	if (whence == SEEK_SET) {
+		printf("SEEK_SET: farr->fidx: %d\n", farr[fd].fidx);
+		farr[fd].fidx = offset;
+		printf("END of SEEK_SET: farr->fidx: %d\n", farr[fd].fidx);
+	} else if (whence == SEEK_CUR) {
+		printf("SEEK_CUR: farr->fidx: %d\n", farr[fd].fidx);
+		farr[fd].fidx += offset;
+		printf("END of SEEK_CUR: farr->fidx: %d\n", farr[fd].fidx);
+	} else if (whence == SEEK_END) {
+		printf("SEEK_END: farr->fidx: %d\n", farr->fidx);
+		//get sizeof file cuz we need end of file ? and since .size 
+		//is the number of blocks for that file, multiply by 512?
+		farr[fd].fidx = dea[farr[fd].didx].size*vcbp->sblk;
+		farr[fd].fidx += offset;
+		printf("END of SEEK_END: fiop->fidx: %d\n", farr->fidx);
+	}
+	printf("farr[fd].fidx: %d\n", farr[fd].fidx);
+	//not sure what to return? lseek returns the resulting offset location
+	//as mmeasured in bytes from the beginning of the file
+	return farr[fd].fidx;
+	//return offset;
 }
 
 void b_close (int fd){
