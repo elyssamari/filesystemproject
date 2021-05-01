@@ -96,7 +96,10 @@ int b_open (char * filename, int flags){
 
 		if((i+1)  == vcbp->sroots){
 			farr[index].startf = allocate_free_space(1);
-			farr[index].didx = makede(filename,farr[index].startf,1,0, "changelater");
+			//made currentDir in mfs.h an extern char [] and just cast (char*)
+			//to be passed into makede
+			farr[index].didx = makede(filename,farr[index].startf,1,0, (char*)currentDir);
+			printf("~~curdir where file is to be opened: %s\n", (char*)currentDir);
 		}
 	}
 
@@ -283,6 +286,11 @@ void b_close (int fd){
 	if (farr[fd].bufferdata > 0){
 	   b_write(fd, farr[fd].fbuffer, 0);
 	}
+
+	//i think we should be freeing its buffer since malloc was called 
+	//but not sure if this is freed elsewhere as well? didnt seem like it
+	free(farr[fd].fbuffer);
+	farr[fd].fbuffer = NULL; //for good practice?
  	   //fiop->permission = -1; //???? not sure
 	   //release any unused space?
 	   //free(fiop);

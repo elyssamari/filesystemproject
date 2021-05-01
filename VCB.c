@@ -195,6 +195,9 @@ int allocate_free_space(int nblksn){
 				}
 		   	}
 		}
+		//DO WE NEED LASTi? I WASN'T SURE LOL???
+		lasti = v;
+		printf("lasti: %d\n", lasti);
 		if (nblksn == count){
 		   break;
 		}
@@ -304,18 +307,18 @@ uint64_t createDir(char *name ,uint64_t i){
 	    dea[1].size = 2;
 
 //start of test
-	    strcpy(dea[2].dename,"istest");
-	    dea[2].namet = 0x74656d616e726964;
-	    dea[2].loc = 4; 
-	    dea[2].ford = 0;
-	    dea[2].size = 1;
-	    char*bytes = malloc(512);
-   	    strcpy(bytes,tblk);
-	    uint64_t LBA_write2  = LBAwrite(bytes,1,4);
+	//     strcpy(dea[2].dename,"istest");
+	//     dea[2].namet = 0x74656d616e726964;
+	//     dea[2].loc = 4; 
+	//     dea[2].ford = 0;
+	//     dea[2].size = 1;
+	//     char*bytes = malloc(512);
+   	//     strcpy(bytes,tblk);
+	//     uint64_t LBA_write2  = LBAwrite(bytes,1,4);
 		
-	if (LBA_write2 == 0){
-	   printf("---------------------------write didn't work------------------------\n");}
-	   free(bytes);
+	// if (LBA_write2 == 0){
+	//    printf("---------------------------write didn't work------------------------\n");}
+	//    free(bytes);
 //end of test
 	}
 

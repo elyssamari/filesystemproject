@@ -330,25 +330,11 @@ int cmd_cp (int argcnt, char *argvec[])
 	
 	testfs_src_fd = b_open (src, O_RDONLY);
 	testfs_dest_fd = b_open (dest, O_WRONLY | O_CREAT | O_TRUNC);
-		int offset = b_seek(testfs_src_fd, 10, SEEK_SET);
-		int rread = b_read(testfs_src_fd, buf, 250);
-		printf("TESTING B_SEEK, SET: %d,\n%s\n", offset, buf);
-
 	do 
 		{
 		readcnt = b_read (testfs_src_fd, buf, BUFFERLEN);
 		b_write (testfs_dest_fd, buf, readcnt);
 		} while (readcnt == BUFFERLEN);
-
-		offset = b_seek(testfs_src_fd, 10, SEEK_CUR);
-		rread = b_read(testfs_src_fd, buf, 250);
-		printf("TESTING B_SEEK, CURR: %d,\n%s\n", offset, buf);
-		// offset = b_seek(testfs_src_fd, 10, SEEK_SET);
-		// rread = b_read(testfs_src_fd, buf, 250);
-		// printf("TESTING B_SEEK, SET: %d,\n%s\n", offset, buf);
-		offset = b_seek(testfs_src_fd, 10, SEEK_END);
-		rread = b_read(testfs_src_fd, buf, 250);
-		printf("TESTING B_SEEK, END: %d,\n%s\n", offset, buf);
 
 	b_close (testfs_src_fd);
 	b_close (testfs_dest_fd);
@@ -361,9 +347,34 @@ int cmd_cp (int argcnt, char *argvec[])
 ****************************************************/
 int cmd_mv (int argcnt, char *argvec[])
 	{
+		printf("-------------------------inside cmd_mv in fsshell-------------------\n");
 #if (CMDMV_ON == 1)				
-	return -99;
-	// **** TODO ****  For you to implement	
+	// return -99;
+	// **** TODO ****  For you to implement
+	char * src;
+	char * dest;	
+	switch (argcnt)
+	{
+		case 2: //only one name provided
+			src = argvec[1];
+			dest = src;
+			break;
+		case 3: //both names provided
+			src = argvec[1];
+			dest = argvec[2];
+			break;
+		default:
+			printf("Usage: mv src dest\n");
+			return -1;
+	}
+	printf("src: %s\ndest: %s\n", src, dest);
+	for (int i = 0; 1 < vcbp->sroots; i++) {
+		if (strcmp(src, dea[i].dename) == 0) {
+			printf("dea[i].dename: %s\n", dea[i].dename);
+			strcpy(dea[i].currentDir, dest);
+		}
+	}
+	
 #endif
 	return 0;
 	}
@@ -747,6 +758,9 @@ int main (int argc, char * argv[])
 			free (cmd);
 			cmd = NULL;
 			// exit while loop and terminate shell
+			//we should be closing down the partition everytime we end process?
+			closePartitionSystem();
+			printf("closed partition.\n");
 			break;
 			}
 			
