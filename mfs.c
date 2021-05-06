@@ -38,6 +38,7 @@ int fs_mkdir(const char *pathname, mode_t mode){
 
 int fs_rmdir(const char *pathname){
 printf("----------inside the fs_rmdir in mfs.c ---------------");
+	int retVal;
       	char * str = (char *) malloc(2 + strlen(currentDir)+ strlen(pathname));
 	char rmDir1[100];
 	char rmDir2[100];
@@ -54,21 +55,25 @@ printf("----------inside the fs_rmdir in mfs.c ---------------");
 
 		if ((strcmp(rmDir1,cdir2)==0) || (strcmp(rmDir2,cdir2)==0) ||
 			(strcmp(currentDir, dea[i].currentDir)==0 && strcmp(pathname, dea[i].dename)==0)){
-		   release_free_space(dea[i].loc, dea[i].size);
-		   dea[i].ford = 0;
-		   dea[i].size = 0;
-		   dea[i].loc = 0;
-		   dea[i].dename[0]='\0';
-		   dea[i].currentDir[0]='\0';
-		   LBAwrite(dea, vcbp->srootbs, vcbp->sroot);
-
+			release_free_space(dea[i].loc, dea[i].size);
+			dea[i].ford = 0;
+			dea[i].size = 0;
+			dea[i].loc = 0;
+			memset(dea[i].dename, 0, strlen(dea[i].dename));
+			memset(dea[i].currentDir, 0, strlen(dea[i].currentDir));
+			LBAwrite(dea, vcbp->srootbs, vcbp->sroot);
+			retVal = 0;
 		}
 	}
 
 	free(str);
 	str = NULL;
 
-	return 0;
+	if (retVal == 0) {
+		return 0;
+	}
+
+	return -1;
 }
 
 fdDir * fs_opendir(const char *name){
@@ -78,13 +83,14 @@ fdDir * fs_opendir(const char *name){
     	fdr = malloc(sizeof(fdDir));
     
 	for(int i = 0; i<vcbp->sroots; i++){
-        	if (strcmp(currentDir,dea[i].currentDir)==0){
-            	   fdr->d_reclen = dea[i].size;
-            	   fdr->dirEntryPosition = i;
-            	   fdr->directoryStartLocation = dea[i].loc;
-            	   fdr->location[count]= i;
-            	   fdr->increment = count;
-            	   count++;
+		if (strcmp(currentDir,dea[i].currentDir)==0){
+			fdr->d_reclen = dea[i].size;
+			fdr->dirEntryPosition = i;
+			fdr->directoryStartLocation = dea[i].loc;
+			fdr->location[count]= i;
+			fdr->fileType = dea[i].ford;
+			fdr->increment = count;
+			count++;
         	}
     	}
 
@@ -97,7 +103,8 @@ struct fs_diriteminfo *fs_readdir(fdDir *dirp){
 	//i made global and freed in rmdir but...?
 	dinfo = malloc(sizeof(struct fs_diriteminfo));
 	dinfo -> d_reclen = dirp -> d_reclen;
-	dinfo -> fileType = 'd';
+	dinfo -> fileType = dirp -> fileType;
+
 	strcpy(dinfo -> d_name, dea[dirp->location[cnt]].dename);
    
 	if (count < cnt && strcmp(currentDir,".")==0){
@@ -159,7 +166,10 @@ int fs_setcwd(char *buf){
 	}
 
 	for(int i = 0; i<vcbp->sroots; i++){
-		if(strcmp(currentDir,dea[i].currentDir)==0 && strcmp(buf, dea[i].dename)==0){
+		if (strcmp(buf, dea[i].dename)==0 && dea[i].ford == 0){
+			return -1;
+		}
+		if (strcmp(currentDir,dea[i].currentDir)==0 && strcmp(buf, dea[i].dename)==0){
 			retVal = 0;
 		}
 	}
