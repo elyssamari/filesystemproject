@@ -42,8 +42,8 @@ typedef struct de{
 	uint64_t size;				//size of de
 	uint64_t loc;				//where is de
 	uint64_t namet;				//to see name on hexdump
-	char  dename [8];			//name of de
-	char currentDir[8];
+	char  dename [10];			//name of de
+	char currentDir[20];
 
 } de_t, *de_p;
 

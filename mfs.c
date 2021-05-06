@@ -6,7 +6,7 @@ VCB_p vcbp;
 char currentDir[100]=".";
 int count = 0;
 int c = 0;
-//make global to be able to be freed in rmDir?????? 
+int cnt = 0;
 fdDir * fdr;
 struct fs_diriteminfo * dinfo;
 
@@ -21,7 +21,7 @@ int fs_mkdir(const char *pathname, mode_t mode){
 		}
 	}
 
-	char* pname = malloc(8);
+	char* pname = malloc(10);
 	strcpy(pname,pathname);
 	//int free_space = allocate_free_space(2); //was wh
 	int entry = makede(pname,0,0,1,currentDir);	
@@ -31,34 +31,42 @@ int fs_mkdir(const char *pathname, mode_t mode){
 		pname = NULL;
 		return entry;
 	}
+
 	return -1;
 }
 
-//Progress: not sure
+
 int fs_rmdir(const char *pathname){
 printf("----------inside the fs_rmdir in mfs.c ---------------");
-	//release?
-	//set dea values to 0?
+      	char * str = (char *) malloc(2 + strlen(currentDir)+ strlen(pathname));
+	char rmDir1[100];
+	char rmDir2[100];
+  	strcpy(str, currentDir);
+  	strcat(str, "/");
+      	strcat(str, pathname);
+	strcpy(rmDir1, str);
+  	strcat(str, "/");
+	strcpy(rmDir2, str);
+
 	for(int i = 0; i<vcbp->sroots; i++){
-		if (strcmp(pathname,dea[i].dename)==0){
-		   //release_free_space(dea[i].loc, dea[i].size);
+		char cdir2[100];
+		strncpy(cdir2, dea[i].currentDir, strlen(rmDir2));
+
+		if ((strcmp(rmDir1,cdir2)==0) || (strcmp(rmDir2,cdir2)==0) ||
+			(strcmp(currentDir, dea[i].currentDir)==0 && strcmp(pathname, dea[i].dename)==0)){
+		   release_free_space(dea[i].loc, dea[i].size);
 		   dea[i].ford = 0;
-		   dea[i].size = -1;
+		   dea[i].size = 0;
 		   dea[i].loc = 0;
-		   strcpy(dea[i].dename,"        ");
+		   dea[i].dename[0]='\0';
+		   dea[i].currentDir[0]='\0';
 		   LBAwrite(dea, vcbp->srootbs, vcbp->sroot);
-//printf("b4 the if in rm\n");
-			/*if (fdr->directoryStartLocation == dea[i].loc) {
-				free(fdr);
-				fdr = NULL;
-			}
-printf("b4 second if in rm\n");
-			if (strcmp(dinfo->d_name, dea[i].dename)) {
-				free(dinfo);
-				dinfo = NULL;
-			}*/
+
 		}
 	}
+
+	free(str);
+	str = NULL;
 
 	return 0;
 }
@@ -83,7 +91,7 @@ fdDir * fs_opendir(const char *name){
     return fdr;
 }
 
-int cnt = 0;
+
 struct fs_diriteminfo *fs_readdir(fdDir *dirp){
 	//need to free this somewhere because its malloc-ed?
 	//i made global and freed in rmdir but...?
@@ -124,7 +132,7 @@ int fs_setcwd(char *buf){
 	char path[100];
 	char *parameters[100];
 	int count = 0;
-	if (strcmp(buf,"..")==0 && (currentDir,".")!=0){
+	if (strcmp(buf,"..")==0 && strcmp(currentDir,".")!=0){
 		char * split = strtok(currentDir, "/");
 		while (split != NULL) {
 			parameters[count++] = strdup(split);
