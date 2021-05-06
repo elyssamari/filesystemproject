@@ -133,7 +133,7 @@ int b_open (char * filename, int flags){
 
 int b_read (int fd, char * buffer, int count){
 	printf("-----------inside the b_read in b_io.c------------\n");
-	printf("what' swrong with blksize %ld\n",vcbp->sblk);
+	//printf("what' swrong with blksize %ld\n",vcbp->sblk);
 	
 	if (farr[fd].permission == -1){
 	   printf("ERROR: file was closed. file not opened\n"); 
@@ -149,11 +149,12 @@ int b_read (int fd, char * buffer, int count){
 	//checking the amount in the file buffer, will execute a read to fill 	
 	//file buffer if it's 0
 
-		if (farr[fd].fidx == 0){
+		if (farr[fd].fidx == 0 && farr[fd].blk_count<farr[fd].file_length){
 		   //printf("what is sblk %ld\n",vcbp->sblk);
 		   uint64_t savesblk = vcbp->sblk;
 		   printf("what is the farr[fd].startf %d\n",farr[fd].startf);
 		   LBAread(farr[fd].fbuffer, 1, farr[fd].startf);
+		   farr[fd].blk_count++;
 		   //printf("what in buffer?\n %s \n",buffer);
 		   //printf("what is sblk %ld\n",vcbp->sblk);
 
@@ -162,7 +163,7 @@ int b_read (int fd, char * buffer, int count){
 		   farr[fd].fidx = farr[fd].bufferdata;
 
 		}
-
+		
 		if (farr[fd].bufferdata <= 0){
 		   //will return the dataCopied, exiting the function since 
 		   //EOF is reached, there's nothing to copy to buffer
@@ -245,6 +246,7 @@ int b_write (int fd, char * buffer, int count){
 		 vcbp->sblk = savev;
 		 printf("after lbawrite of b_write what's wrong with blockisze %ld\n",vcbp->sblk);
 	 	}
+
 
 	}
 

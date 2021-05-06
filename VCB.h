@@ -59,4 +59,4 @@ void allocate_dir();
 uint64_t makede(char*fname, uint64_t index,uint64_t sz,uint64_t fod, char*currentDir);	//makede in VCB.c
 uint64_t createDir(char name [],uint64_t i);					//createDir in VCB.c
 int getval(); 									//getval in VCB.c
-
+void close_vcb();

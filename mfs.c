@@ -36,6 +36,7 @@ int fs_mkdir(const char *pathname, mode_t mode){
 
 //Progress: not sure
 int fs_rmdir(const char *pathname){
+printf("----------inside the fs_rmdir in mfs.c ---------------");
 	//release?
 	//set dea values to 0?
 	for(int i = 0; i<vcbp->sroots; i++){
@@ -46,14 +47,16 @@ int fs_rmdir(const char *pathname){
 		   dea[i].loc = 0;
 		   strcpy(dea[i].dename,"        ");
 		   LBAwrite(dea, vcbp->srootbs, vcbp->sroot);
-			if (fdr->directoryStartLocation == dea[i].loc) {
+//printf("b4 the if in rm\n");
+			/*if (fdr->directoryStartLocation == dea[i].loc) {
 				free(fdr);
 				fdr = NULL;
 			}
+printf("b4 second if in rm\n");
 			if (strcmp(dinfo->d_name, dea[i].dename)) {
 				free(dinfo);
 				dinfo = NULL;
-			}
+			}*/
 		}
 	}
 
@@ -201,6 +204,7 @@ int fs_isDir(char * path){		//return 1 if directory, 0 otherwise
 
 int fs_delete(char* filename){	//removes a file
 	//release
+printf("--------inside the fs_delete in mfs.c--------------");
 	for(int i = 0; i<vcbp->sroots; i++){
 		if (strcmp(filename,dea[i].dename)==0){
 		   release_free_space(dea[i].loc, dea[i].size);
@@ -209,10 +213,11 @@ int fs_delete(char* filename){	//removes a file
 		   dea[i].loc = 0;
 		   strcpy(dea[i].dename,"        ");
 		   LBAwrite(dea, vcbp->srootbs, vcbp->sroot);
+		   return 0;
 		}
 	}
 
-	return 0;
+	return -1;
 }
 
 int fs_stat(const char *path, struct fs_stat *buf){

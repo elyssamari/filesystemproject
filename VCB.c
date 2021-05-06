@@ -94,10 +94,8 @@ void close_vcb(){
 
 int getval(){
 	printf("-----------------------------inside the getval()--------------------------\n");
-	//int pls = getdval();
-	//printf("out of teh getdval in the getval\n");
 	vcbp = malloc(512);
-	//printf("after the malloc b4 read\n");
+
 	uint64_t LBA_read = LBAread(vcbp,1,0);
 
 	if (vcbp->signu == 0){
@@ -106,30 +104,23 @@ int getval(){
 	}
 
 	if (vcbp->signu==Signu){
-	   //vcbp = malloc(buff->sblk);
-	   //vcbp = buff;
 
            bitmap = (char*)calloc(((vcbp->sffs)*(vcbp->sblk)),sizeof(char));
-	   //char * getb = malloc((vcbp->sblk)*(vcbp->sffs));
-	   //char*getb = (char*)calloc((blksneed*(vcbp->sblk)),sizeof(char));
-	   LBAread(bitmap,vcbp->sffs,vcbp->sfs);
-	   //bitmap = malloc((vcbp->sblk)*(vcbp->sffs));
-	   //bitmap = getb;
-	   //memcpy(bitmap,getb,((vcbp->sblk)*(vcbp->sffs)));
 
-	   //de_t * getd = malloc((vcbp->sblk) * (vcbp->srootbs));
-	   dea = malloc(2*(vcbp->sblk));
+	   LBAread(bitmap,vcbp->sffs,vcbp->sfs);
+
+	   dea = malloc(10*(vcbp->sblk));
+
 	   LBAread(dea,vcbp->srootbs,vcbp->sroot);
-	   //dea = malloc((vcbp->sblk) * (vcbp->srootbs));
-	   //memcpy(dea,getd,(vcbp->sblk) * (vcbp->srootbs));
+
 
        	//printfs for testing
-	printf("-----------------------------inside getval().2---------------------------\n");
-	printf("Sroots: %ld\n",vcbp->sblk);
+	/*printf("-----------------------------inside getval()---------------------------\n");
+	printf("sblk: %ld\n",vcbp->sblk);
 	printf("Lba i of dea: %ld\n",vcbp->sroot);
 	printf("Sfs: %ld\n",vcbp->sfs);
 	printf("Size of a dea: %ld\n",dea[4].size);
-	printf("Bitmap in the getval: %s\n",bitmap);	
+	printf("Bitmap in the getval: %s\n",bitmap);	*/
 		
 	return 1;
 	}
@@ -159,7 +150,8 @@ uint64_t init_free_space(){
 		}
 	}
 
-	for(int i = 0; i<=blksneed+1; i++){
+	for(int i = 0; i<=blksneed; i++){
+//printf("/-/-/-/-/-/-/-/-/-/-/ init free what is i %d\n",i);
 	   bitmap[0] |= 1<<i;
 	}
 
@@ -179,7 +171,41 @@ int allocate_free_space(int nblksn){
 	int lasti = 0;				//track where it left at to get continous blks
 	int count = 0;				//track if the count matches blksneeded
 	
-	for (int v = 0; v < (vcbp->nblk); v++){
+	for(int i = 0; i < vcbp->nblk/8; i++){
+			//printf("what is bitmap at i: %d, bitmap: %d\n",i,bitmap[i]);
+			int widx = (log(bitmap[i])/log(2))+1;
+			
+			//printf("where is it free? what is widx %d\n",widx);
+			int count = 0;
+			if((widx < -1) && !(bitmap[i] & (1 << 7)) != 0){widx = 0;}
+			if((widx < -1) && (bitmap[i] & (1 << 7)) != 0){
+//printf("b4 continue\n");
+			continue;}
+			if(widx < 7){
+				start = (i*8)+widx;
+				lasti = widx;
+				while(count < nblksn){
+					if((bitmap[i] & (1 << widx)) == 0){
+						if(lasti == widx){
+//printf("in the if what is i %d, widx %d\n",i,widx);
+							bitmap[i] |= 1 << widx;
+							count++;
+							widx++;
+							lasti = widx;
+						}else{
+							start = (i*8)+widx;
+							lasti=widx;
+							count = 0;
+						}
+					}
+					if(widx == 8){i++; widx = 0;lasti=widx;}
+				}
+				if(count == nblksn){printf("what is i: %d ? bit: %d\n",i,bitmap[i]);
+printf("what is actual count %d\n",((i*8)+widx));
+ 							break;}
+			}
+		}
+	/*for (int v = 0; v < (vcbp->nblk); v++){
 	    printf("Number of time for loop runs: %d\n",v);
 	    int widx = log(bitmap[v])/log(2);
 	    start = widx;	
@@ -201,7 +227,7 @@ int allocate_free_space(int nblksn){
 		if (nblksn == count){
 		   break;
 		}
-	}
+	}*/
 
 	printf("Sfs: %ld and sffs: %ld\n",vcbp->sfs, vcbp->sffs);
 	//if(start > 3){printf("what id dea size %ld\n",dea[4].size);}
@@ -259,9 +285,9 @@ uint64_t makede(char*fname, uint64_t index,uint64_t sz,uint64_t fod, char *curre
 	printf("Sroots: %ld\n",vcbp->sroots);
 
 	for (int i = 0; i<vcbp->sroots; i++){
-	    printf("if its not 0 then what is it? %ld\n",dea[i].size);
+	    //printf("if its not 0 then what is it? %ld\n",dea[i].size);
         	if (dea[i].size == 0){
-		   printf("trying to set a dirctory here n makede\n");
+		   //printf("trying to set a dirctory here n makede\n");
           	   strcpy(dea[i].dename,fname);
            	   dea[i].namet = 0x74656d616e726964;	//name on hex dump (temanrid)
                    dea[i].loc = index; 			//location of directory entry
@@ -280,12 +306,12 @@ uint64_t makede(char*fname, uint64_t index,uint64_t sz,uint64_t fod, char *curre
 uint64_t createDir(char *name ,uint64_t i){
 	printf("-----------------inside the create directory-----------------------\n");
 	
-	uint64_t where_start = allocate_free_space(3);
+	uint64_t where_start = allocate_free_space(10);
 	printf("------------------where is start  %ld \nafter allocate-------------\n",where_start);
 	
-	dea = malloc(2*(vcbp->sblk));
-	vcbp->srootbs = 2;
-	uint64_t where_stop = (2*(vcbp->sblk))/sizeof(de_t);
+	dea = malloc(10*(vcbp->sblk));
+	vcbp->srootbs = 10;
+	uint64_t where_stop = (10*(vcbp->sblk))/sizeof(de_t);
 	vcbp->sroots = where_stop;
 	char*test_null = "NULL\0";
 	
@@ -322,7 +348,7 @@ uint64_t createDir(char *name ,uint64_t i){
 //end of test
 	}
 
-	LBAwrite(dea, 2, vcbp->sroot);
+	LBAwrite(dea, 10, vcbp->sroot);
 	printf("---------------------------end of directory------------------------\n");
 	return where_start;
 }

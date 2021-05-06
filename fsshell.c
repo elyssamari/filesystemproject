@@ -368,7 +368,7 @@ int cmd_mv (int argcnt, char *argvec[])
 			return -1;
 	}
 	printf("src: %s\ndest: %s\n", src, dest);
-	for (int i = 0; 1 < vcbp->sroots; i++) {
+	for (int i = 0; i < vcbp->sroots; i++) {
 		if (strcmp(src, dea[i].dename) == 0) {
 			printf("dea[i].dename: %s\n", dea[i].dename);
 			strcpy(dea[i].currentDir, dest);
@@ -759,6 +759,7 @@ int main (int argc, char * argv[])
 			cmd = NULL;
 			// exit while loop and terminate shell
 			//we should be closing down the partition everytime we end process?
+			close_vcb();
 			closePartitionSystem();
 			printf("closed partition.\n");
 			break;
