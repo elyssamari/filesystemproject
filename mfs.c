@@ -23,8 +23,8 @@ int fs_mkdir(const char *pathname, mode_t mode){
 
 	char* pname = malloc(8);
 	strcpy(pname,pathname);
-	int free_space = allocate_free_space(2); //was wh
-	int entry = makede(pname,free_space,2,1,currentDir);	
+	//int free_space = allocate_free_space(2); //was wh
+	int entry = makede(pname,0,0,1,currentDir);	
 	if(entry > 0 ){
 		//can free here?
 		free(pname);
@@ -41,9 +41,9 @@ printf("----------inside the fs_rmdir in mfs.c ---------------");
 	//set dea values to 0?
 	for(int i = 0; i<vcbp->sroots; i++){
 		if (strcmp(pathname,dea[i].dename)==0){
-		   release_free_space(dea[i].loc, dea[i].size);
+		   //release_free_space(dea[i].loc, dea[i].size);
 		   dea[i].ford = 0;
-		   dea[i].size = 0;
+		   dea[i].size = -1;
 		   dea[i].loc = 0;
 		   strcpy(dea[i].dename,"        ");
 		   LBAwrite(dea, vcbp->srootbs, vcbp->sroot);
@@ -209,7 +209,7 @@ printf("--------inside the fs_delete in mfs.c--------------");
 		if (strcmp(filename,dea[i].dename)==0){
 		   release_free_space(dea[i].loc, dea[i].size);
 		   dea[i].ford = 0;
-		   dea[i].size = 0;
+		   dea[i].size = -1;
 		   dea[i].loc = 0;
 		   strcpy(dea[i].dename,"        ");
 		   LBAwrite(dea, vcbp->srootbs, vcbp->sroot);

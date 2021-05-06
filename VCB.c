@@ -170,15 +170,34 @@ int allocate_free_space(int nblksn){
 	int start = 0;				//track starting block index
 	int lasti = 0;				//track where it left at to get continous blks
 	int count = 0;				//track if the count matches blksneeded
-	
+	printf("what is nblk %ld\n",vcbp->nblk);
 	for(int i = 0; i < vcbp->nblk/8; i++){
-			//printf("what is bitmap at i: %d, bitmap: %d\n",i,bitmap[i]);
-			int widx = (log(bitmap[i])/log(2))+1;
+		for(int j = 0; j < 8; j++){
+			if((bitmap[i] & (1 << j)) == 0){
+				if(start ==0){start = (i * 8) + j+1;}
+				bitmap[i] |= 1 << j;
+				count ++;
+				lasti = (i*8)+j;
+				if(count == nblksn){	
+LBAwrite(bitmap,vcbp -> sffs, vcbp -> sfs);
+					return start;
+				}
+			}else{
+				if(start > 0){
+					start = 0;
+					count = 0;
+				}
+			}
+		}
+	}
+	/*for(int i = 0; i < vcbp->nblk/8; i++){
+		//printf("what is bitmap at i: %d, bitmap: %d\n",i,bitmap[i]);
+		int widx = (log(bitmap[i])/log(2))+1;
 			
-			//printf("where is it free? what is widx %d\n",widx);
-			int count = 0;
-			if((widx < -1) && !(bitmap[i] & (1 << 7)) != 0){widx = 0;}
-			if((widx < -1) && (bitmap[i] & (1 << 7)) != 0){
+		//printf("where is it free? what is widx %d\n",widx);
+		int count = 0;
+		if((widx < -1) && !(bitmap[i] & (1 << 7)) != 0){widx = 0;}
+		if((widx < -1) && (bitmap[i] & (1 << 7)) != 0){
 //printf("b4 continue\n");
 			continue;}
 			if(widx < 7){
@@ -187,53 +206,39 @@ int allocate_free_space(int nblksn){
 				while(count < nblksn){
 					if((bitmap[i] & (1 << widx)) == 0){
 						if(lasti == widx){
-//printf("in the if what is i %d, widx %d\n",i,widx);
+printf("in the if what is i %d, widx %d\n",i,widx);
+printf("what is count %d\n",count);
 							bitmap[i] |= 1 << widx;
 							count++;
 							widx++;
 							lasti = widx;
 						}else{
+printf("WHATS UP WITH THE BUITMAP\n");
 							start = (i*8)+widx;
 							lasti=widx;
 							count = 0;
 						}
 					}
-					if(widx == 8){i++; widx = 0;lasti=widx;}
+					if(widx == 8){
+						printf("WHAT's UP WITH THE BITMAP");
+						i++; widx = 0;lasti=widx;
+					}
+					if((i-1) == (vcbp->nblk/8)){
+						printf("SOMETHING UP WITH THE BITMAP");
+						return -1;
+					}
 				}
-				if(count == nblksn){printf("what is i: %d ? bit: %d\n",i,bitmap[i]);
-printf("what is actual count %d\n",((i*8)+widx));
- 							break;}
+				if(count == nblksn){
+					printf("what is i: %d ? bit: %d\n",i,bitmap[i]);
+					printf("what is actual count %d\n",((i*8)+widx));
+ 					break;
+				}
 			}
-		}
-	/*for (int v = 0; v < (vcbp->nblk); v++){
-	    printf("Number of time for loop runs: %d\n",v);
-	    int widx = log(bitmap[v])/log(2);
-	    start = widx;	
-		if (widx < 7){
-			while (nblksn > count){
-		              printf("V: %d\nWidx: %d\n",v,widx);
-		              bitmap[v] |= 1 << widx;
-		              count++;
-			      widx++;
-				if (widx == 7){
-				   v++; 
-				   widx = 0;
-				}
-		   	}
-		}
-		//DO WE NEED LASTi? I WASN'T SURE LOL???
-		lasti = v;
-		printf("lasti: %d\n", lasti);
-		if (nblksn == count){
-		   break;
-		}
-	}*/
-
+		}*/
+	
 	printf("Sfs: %ld and sffs: %ld\n",vcbp->sfs, vcbp->sffs);
-	//if(start > 3){printf("what id dea size %ld\n",dea[4].size);}
-	LBAwrite(bitmap,vcbp -> sffs, vcbp -> sfs);
+	//LBAwrite(bitmap,vcbp -> sffs, vcbp -> sfs);
 	printf("Sfs: %ld and sffs: %ld\n",vcbp->sfs, vcbp->sffs);
-	//if(start > 3){printf("what id dea size %ld\n",dea[4].size);}
 	printf("Start given: %d\n",start);
 	return start;
 }
@@ -266,7 +271,8 @@ void release_free_space(int LBA, int count){
 	int index = (LBA / 8);			//each index of bitmap holds 8 so LBA/8 gives idx
 	int innerindex = (LBA % 8)-1;		//need the innerindex of the bitmap[idx]
 	int track = 0;				//to keep track of how much cleared
-
+printf("WHERE RELEASED %d \n",index+innerindex);
+printf("WHERE RELEASED index %d innerindex %d\n",index,innerindex);
 	while (track < count){ 
 		bitmap[index] &= ~(1<<innerindex);	//clear bit at inneridx of the bitmap[idx]
 		track++;				//update track
@@ -286,7 +292,7 @@ uint64_t makede(char*fname, uint64_t index,uint64_t sz,uint64_t fod, char *curre
 
 	for (int i = 0; i<vcbp->sroots; i++){
 	    //printf("if its not 0 then what is it? %ld\n",dea[i].size);
-        	if (dea[i].size == 0){
+        	if (dea[i].size == -1){
 		   //printf("trying to set a dirctory here n makede\n");
           	   strcpy(dea[i].dename,fname);
            	   dea[i].namet = 0x74656d616e726964;	//name on hex dump (temanrid)
@@ -294,7 +300,7 @@ uint64_t makede(char*fname, uint64_t index,uint64_t sz,uint64_t fod, char *curre
                    dea[i].ford = fod;			//file (0) or directory (1)
                    dea[i].size = sz;			//size of directory entry
                    strcpy(dea[i].currentDir, currentDir);
-                   LBAwrite(dea, 2, vcbp->sroot);
+                   LBAwrite(dea, 10, vcbp->sroot);
             	   return i;
         	}
     	}
@@ -317,20 +323,20 @@ uint64_t createDir(char *name ,uint64_t i){
 	
 	if (strcmp(name,test_null)==0){
 		for (int g = 0; g<where_stop; g++){
-		    dea[g].size = 0;
+		    dea[g].size = -1;
 		}
 
 	    strcpy(dea[0].dename,".");
 	    dea[0].loc = 0; 
 	    dea[0].ford = 1;
-	    dea[0].size = 2;
+	    dea[0].size = 0;
 	    dea[0].namet = 0x74656d616e726964;	//temanrid
 
 	    strcpy(dea[1].dename,"..");
 	    dea[1].namet = 0x74656d616e726964;	//temanrid
 	    dea[1].loc = 0; 
 	    dea[1].ford = 1;
-	    dea[1].size = 2;
+	    dea[1].size = 0;
 
 //start of test
 	//     strcpy(dea[2].dename,"istest");

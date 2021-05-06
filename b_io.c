@@ -23,7 +23,7 @@
 #define maxf 20
 
 typedef struct finfo{
-	int blk_count;			//blockcount of file use for r/w
+	int blk_count;		//blockcount of file use for r/w
 	int fidx;		//file index use for r/w
 	char * fbuffer;		//file buffer use for r/w
 	int bufferdata;
@@ -31,6 +31,7 @@ typedef struct finfo{
 	int startf;		//what is the start/lba index
 	int file_length;	//blk len of file from that lba index
 	int didx;		//index in the de array
+	int blkused;		//how much blocks used 
 } finfo;
 
 int var = 0; //party
@@ -95,10 +96,11 @@ int b_open (char * filename, int flags){
 		}
 
 		if((i+1)  == vcbp->sroots){
-			farr[index].startf = allocate_free_space(1);
+			farr[index].startf = allocate_free_space(10);
 			//made currentDir in mfs.h an extern char [] and just cast (char*)
 			//to be passed into makede
-			farr[index].didx = makede(filename,farr[index].startf,1,0, (char*)currentDir);
+			if(farr[index].startf == -1){return -1;}
+			farr[index].didx = makede(filename,farr[index].startf,10,0, (char*)currentDir);
 			printf("~~curdir where file is to be opened: %s\n", (char*)currentDir);
 		}
 	}
@@ -145,15 +147,15 @@ int b_read (int fd, char * buffer, int count){
 
 	//loop makes sure that enough chars are being copied into the buffer, it will 			
 	//stop once the requested amount is filled or EOF
-	while(dataCopied != count){
+	while(dataCopied < count){
 	//checking the amount in the file buffer, will execute a read to fill 	
 	//file buffer if it's 0
 
-		if (farr[fd].fidx == 0 && farr[fd].blk_count<farr[fd].file_length){
+		if (farr[fd].bufferdata == 0 && farr[fd].blk_count<farr[fd].file_length){
 		   //printf("what is sblk %ld\n",vcbp->sblk);
 		   uint64_t savesblk = vcbp->sblk;
 		   printf("what is the farr[fd].startf %d\n",farr[fd].startf);
-		   LBAread(farr[fd].fbuffer, 1, farr[fd].startf);
+		   LBAread(farr[fd].fbuffer, 1, farr[fd].startf+farr[fd].blk_count);
 		   farr[fd].blk_count++;
 		   //printf("what in buffer?\n %s \n",buffer);
 		   //printf("what is sblk %ld\n",vcbp->sblk);
@@ -163,12 +165,14 @@ int b_read (int fd, char * buffer, int count){
 		   farr[fd].fidx = farr[fd].bufferdata;
 
 		}
-		
-		if (farr[fd].bufferdata <= 0){
+		if(farr[fd].blk_count == farr[fd].file_length){
+			return dataCopied;
+		}
+		/*if (farr[fd].bufferdata <= 0){
 		   //will return the dataCopied, exiting the function since 
 		   //EOF is reached, there's nothing to copy to buffer
 		   return dataCopied;
-		}
+		}*/
 
 	//the copying of the bufferIndex data into the buffer
 	//setting the space at the index of the buffer to what is in the bufferIndex's index
@@ -194,7 +198,7 @@ int b_read (int fd, char * buffer, int count){
 
 int b_write (int fd, char * buffer, int count){
 	printf("--------inside the b_write in b_io.c------------\n");
-	printf("start of b_write what's wrong with blockisze %ld\n",vcbp->sblk);
+	//printf("start of b_write what's wrong with blockisze %ld\n",vcbp->sblk);
 
 	//check permissions
 	if (farr[fd].permission == -1){
@@ -209,49 +213,46 @@ int b_write (int fd, char * buffer, int count){
 	//int trk = 0;
 	//need case for if b_close calls this to write rest to file
 
-	printf("after permission check of b_write what's wrong with blockisze %ld\n",vcbp->sblk);
+	//printf("after permission check of b_write what's wrong with blockisze %ld\n",vcbp->sblk);
 	//copy byte by byte :) cries in time complexity
-	
-	/*while(trk < count){
-		//check if file buffer full
-		if(farr[fd].fidx == vcbp->sblk){
-		printf("inside the if statemt of b_write\n");
-		LBAwrite(farr[fd].fbuffer, 1, farr[fd].startf);
-		printf("wat was the position to write %d\n", farr[fd].startf);
-		return 0;
-	}*/
 
 	int readNum = 0;	//keep track of bytes written or in this case, copied
 				//to write the last block that didn't make it to 512
 	if (count == 0){
 	   uint64_t sav  = vcbp->sblk;
-	   LBAwrite(farr[fd].fbuffer,1, farr[fd].startf);
+	   char * yeet = malloc(farr[fd].bufferdata);
+	   farr[fd].fbuffer[farr[fd].bufferdata]='\0';
+	   strncpy(yeet,farr[fd].fbuffer,farr[fd].bufferdata);
+	   LBAwrite(yeet,1, farr[fd].startf+farr[fd].blk_count);
+	   farr[fd].blk_count ++;
 	   vcbp->sblk = sav;
 	}
 
-	printf("after count == 0 of b_write what's wrong with blockisze %ld\n",vcbp->sblk);
+	//printf("after count == 0 of b_write what's wrong with blockisze %ld\n",vcbp->sblk);
 	uint64_t damit = vcbp->sblk;
 	//copies the caller's buffer byte by byte until the requested count is reached
 
 	while (readNum < count){
-	      farr[fd].fbuffer[farr[fd].fidx] = buffer[readNum];
+	      farr[fd].fbuffer[farr[fd].bufferdata] = buffer[readNum];
 	      readNum++;	//update how much read
-	      farr[fd].fidx++;	//update where we are
+	      farr[fd].bufferdata++;	//update where we are
 	      //writing when the buffer is full
 
-	      if (farr[fd].fidx == damit){
-		 printf("b4 lbawrite of b_write what's wrong with blockisze %ld\n",vcbp->sblk);
+	      if (farr[fd].bufferdata == damit){
+		//printf("b4 lbawrite of b_write what's wrong with blockisze %ld\n",vcbp->sblk);
+//printf("fidx %d damit %ld MADE IT IN THE 512 LIMIT AT LEAST ONCE\n",farr[fd].fidx,damit);
 		 uint64_t savev = vcbp->sblk;
-		 LBAwrite(farr[fd].fbuffer, 1, farr[fd].startf);
+		 LBAwrite(farr[fd].fbuffer, 1, farr[fd].startf+farr[fd].blk_count);
+printf("WHERE WRITE TO FROM LBAWRITE IN B_WRITE %d\n",farr[fd].startf+farr[fd].blk_count);
+		 farr[fd].blk_count++;
+		 farr[fd].bufferdata=0;
 		 vcbp->sblk = savev;
-		 printf("after lbawrite of b_write what's wrong with blockisze %ld\n",vcbp->sblk);
+		 //printf("after lbawrite of b_write what's wrong with blockisze %ld\n",vcbp->sblk);
 	 	}
-
-
 	}
 
 	vcbp->sblk = damit;
-	printf("end of b_write what's wrong with blksize %ld\n",vcbp->sblk);
+	//printf("end of b_write what's wrong with blksize %ld\n",vcbp->sblk);
 	return (readNum);
 }
 
@@ -286,9 +287,17 @@ void b_close (int fd){
 	printf("--------inside the b_close in the b_io.c-------\n");
 	
 	if (farr[fd].bufferdata > 0){
+printf("INSIDE THE IF BUFFERDATA ONCE FOR WRITE\n");
 	   b_write(fd, farr[fd].fbuffer, 0);
+		
 	}
-
+	if(farr[fd].blk_count < farr[fd].file_length){
+	   release_free_space(farr[fd].blk_count + farr[fd].startf, farr[fd].file_length-farr[fd].blk_count );
+printf("WHERE ARE WE FREEING TO %d HOW MUCH %d\n",farr[fd].blk_count + farr[fd].startf, farr[fd].file_length-farr[fd].blk_count);
+	dea[farr[fd].didx].size = farr[fd].blk_count;
+printf("WHAT IS THE NEW SIZE %ld\n",dea[farr[fd].didx].size);
+	LBAwrite(dea,10,vcbp->sroot);
+	}
 	//i think we should be freeing its buffer since malloc was called 
 	//but not sure if this is freed elsewhere as well? didnt seem like it
 	free(farr[fd].fbuffer);

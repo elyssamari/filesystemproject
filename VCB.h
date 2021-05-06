@@ -47,6 +47,11 @@ typedef struct de{
 
 } de_t, *de_p;
 
+typedef struct ftbl{
+	uint64_t begins;
+	uint64_t length;
+}ftbl_t,*ftbl_p;
+
 //#include "fsLow.h"
 extern VCB_p vcbp;								//VCB_p vcbp = NULL in VCB.c
 extern de_t *dea;								//de_t * dea = NULL in VCB.c
