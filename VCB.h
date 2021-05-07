@@ -15,7 +15,6 @@
 #include "fsLow.h"
 #define Signu 0x726f766976727553
 #define H_CAPTION "Message Test: Hello World this is the group Survivors\n\n"	//Message Test
-#define tblk "Hello there, this is a test to test the b_read function in b_io.c. It is 512. The following is randomness. This world is so sad. What are supposed to do? How can we save this world? Why can the rich and powerful do what they want while the rest of us feel the impact of their choices? Why do we have people who deny the facts just because it is against their religion? How are we supposed to move forward when we are so divided? In the end, it will be too late. Never gonna give you up, never gonna let you down."
 
 typedef struct VCB{
 	char VCBPrefix[sizeof(H_CAPTION)+2];	//Message Test
@@ -33,7 +32,6 @@ typedef struct VCB{
 	uint64_t sfs;				//where does free space start
 	uint64_t sffst;				//words for free space size
 	uint64_t sffs;				//block size of free space map
-	
 } VCB_t, *VCB_p;
 
 //based on the struct provided in the Tuesday lecture 4/13
@@ -42,9 +40,9 @@ typedef struct de{
 	uint64_t size;				//size of de
 	uint64_t loc;				//where is de
 	uint64_t namet;				//to see name on hexdump
-	char  dename [10];			//name of de
-	char currentDir[20];
-
+	char  dename [10];			//name of directory
+	char currentDir[20];			//current working directory 
+						//where the directory was made (pwd)
 } de_t, *de_p;
 
 /*typedef struct ftbl{

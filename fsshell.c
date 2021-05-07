@@ -751,14 +751,18 @@ int main (int argc, char * argv[])
 	char * cmdin;
         char * cmd;
         HIST_ENTRY *he;
-    	if(argc < 4){printf("Usage: ./fsshell volumeName volumeSize blockSize\n");return 0;}
+
+    	if(argc < 4){
+		printf("Usage: ./fsshell volumeName volumeSize blockSize\n");
+		return 0;
+	}
+
     	using_history();
     	stifle_history(200);    //max history entries
 
    	char * filename;
     	uint64_t volumeSize;
     	uint64_t blockSize;
-
     	filename = argv[1];
     	volumeSize = atoll (argv[2]);
     	blockSize = atoll (argv[3]);

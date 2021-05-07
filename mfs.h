@@ -44,7 +44,6 @@ struct fs_diriteminfo
 
 typedef struct
 	{
-	/*****TO DO:  Fill in this structure with what your open/read directory needs  *****/
 	unsigned short  d_reclen;		/*length of this record */
 	unsigned short	dirEntryPosition;	/*which directory entry position, like file pos */
 	uint64_t	directoryStartLocation;		/*Starting LBA of directory */
@@ -76,8 +75,6 @@ struct fs_stat
 	time_t    st_accesstime;   	/* time of last access */
 	time_t    st_modtime;   	/* time of last modification */
 	time_t    st_createtime;   	/* time of last status change */
-	
-	/* add additional attributes here for your file system */
 	};
 
 int fs_stat(const char *path, struct fs_stat *buf);
