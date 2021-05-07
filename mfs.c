@@ -239,35 +239,20 @@ int fs_delete(char* filename){	//removes a file
 	return -1;
 }
 
+/*ensures that the path passed in exists in the list of directories and files and 
+saves grabs the values from the proper file and saves it to the struct fs_stat buf. */
 int fs_stat(const char *path, struct fs_stat *buf){
-//create time_t variable to grab the time needed to store values into the struct
-	time_t rawTime;
-	//loop through to find the proper directory entry
 	for (int i = 0; i < vcbp->sroots; i++) {
 		if (strcmp(dea[i].dename, path) == 0) {
-			//total size in bytes; since .size = num of blocks allocated to it i assume
 			buf->st_size = dea[i].size*vcbp->sblk;
-			printf("buf size: %li\n", buf->st_size);
-			//block size of file system I/O; i assumed it was asking for how big 
-			//each block size was? thats why i set as sblk from vcbp
 			buf->st_blksize = vcbp->sblk;
-			printf("buf blksize: %li\n", buf->st_blksize);
-			//assuming size in de struct is bumber of blocks, set as such
 			buf->st_blocks = dea[i].size;
-			printf("buf blocks: %li\n", buf->st_blocks);
-
-			//how to get a time_t that doesn't update with the computer's time / date
-			//for createtime
-
-			//finds current time + saves it to acesstime variable
-			time(&rawTime);
-			buf->st_accesstime = rawTime;
-			//rawTime itself isn't readable by itself; ctime to make it readable
-			printf("file: %s\n", dea[i].dename);
-			printf("time: %s\n", ctime(&buf->st_accesstime)); 
-			
-			//modtime would need to check when the file was changed but how? hm
-		 } 
+			//creates a time_t to get a time
+			time_t fileTime = time(NULL);
+			buf->st_accesstime = fileTime;
+			buf->st_createtime = fileTime;
+			buf->st_modtime = fileTime;
+		} 
 	}
 	return 0;
 }

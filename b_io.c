@@ -244,32 +244,21 @@ int b_write (int fd, char * buffer, int count){
 }
 
 int b_seek (int fd, off_t offset, int whence){
-
+	//check which "whence" was passed in and includes the offset at the right location
+	//as dictated by the "whence"
 	if (whence == SEEK_SET) {
-		printf("SEEK_SET: farr->fidx: %d\n", farr[fd].fidx);
 		farr[fd].fidx = offset;
-		printf("END of SEEK_SET: farr->fidx: %d\n", farr[fd].fidx);
 	} else if (whence == SEEK_CUR) {
-		printf("SEEK_CUR: farr->fidx: %d\n", farr[fd].fidx);
 		farr[fd].fidx += offset;
-		printf("END of SEEK_CUR: farr->fidx: %d\n", farr[fd].fidx);
 	} else if (whence == SEEK_END) {
-		printf("SEEK_END: farr->fidx: %d\n", farr->fidx);
-		//get sizeof file cuz we need end of file and since .size 
-		//is the number of blocks for that file, multiply by 512
 		farr[fd].fidx = dea[farr[fd].didx].size*vcbp->sblk;
 		farr[fd].fidx += offset;
-		printf("END of SEEK_END: fiop->fidx: %d\n", farr->fidx);
 	}
-	printf("farr[fd].fidx: %d\n", farr[fd].fidx);
-	//lseek returns the resulting offset location
-	//as measured in bytes from the beginning of the file
+	//returns the resulting offset location
 	return farr[fd].fidx;
-	//return offset;
 }
 
 void b_close (int fd){
-	printf("--------inside the b_close in the b_io.c-------\n");
 	//write remaining data
 	if (farr[fd].bufferdata > 0){
 	   b_write(fd, farr[fd].fbuffer, 0);
