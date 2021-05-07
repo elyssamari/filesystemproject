@@ -6,8 +6,8 @@ VCB_p vcbp;
 char currentDir[100]=".";
 int count = 0;
 int count2 = 0;
-fdDir * fdr;
-struct fs_diriteminfo * dinfo;
+//fdDir * fdr;
+//struct fs_diriteminfo * dinfo;
 
 int fs_mkdir(const char *pathname, mode_t mode){
 	printf("Pathname: %s\n",pathname);
@@ -28,7 +28,7 @@ int fs_mkdir(const char *pathname, mode_t mode){
 		pname = NULL;
 		return entry;
 	}
-
+	free(pname);
 	return -1;
 }
 
@@ -89,8 +89,7 @@ made, we save the current working directory name which the directory was made in
 helps us easily track what are files or directories are currently in the currently working directory in which 
 we want to see for the ls command. */
 fdDir * fs_opendir(const char *name){
-    	fdr = malloc(sizeof(fdDir));
-    
+    	fdDir * fdr = malloc(sizeof(fdDir));
 	for(int i = 0; i<vcbp->sroots; i++){
 		if (strcmp(currentDir,dea[i].currentDir)==0){
 			fdr->d_reclen = dea[i].size;
@@ -109,12 +108,12 @@ fdDir * fs_opendir(const char *name){
 /* We are currently listing all the directory entry names (files and directories) that are in the current working
 directory. */
 struct fs_diriteminfo *fs_readdir(fdDir *dirp){
-	dinfo = malloc(sizeof(struct fs_diriteminfo));
+	struct fs_diriteminfo * dinfo = malloc(sizeof(struct fs_diriteminfo));
 	dinfo -> d_reclen = dirp -> d_reclen;
 	dinfo -> fileType = dirp -> fileType;
 	strcpy(dinfo -> d_name, dea[dirp->location[count2]].dename);
    
-	if (count < count2 && strcmp(currentDir,".")==0){
+	if (count <= count2 && strcmp(currentDir,".")==0){
 		dinfo = NULL;
 		count =0;
 		count2 = 0;

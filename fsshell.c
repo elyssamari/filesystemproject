@@ -769,12 +769,12 @@ int main (int argc, char * argv[])
 #endif
 		
 		cmd = malloc (strlen(cmdin) + 30);
-		strcpy (cmd, cmdin);
+		strcpy (cmd, cmdin);printf("b4 a free here in main free cmdin\n");
 		free (cmdin);
 		cmdin = NULL;
 		
 		if (strcmp (cmd, "exit") == 0)
-			{
+			{printf("b4 a free here inmain free smd if exit\n");
 			free (cmd);
 			cmd = NULL;
 			// exit while loop and terminate shell
@@ -793,7 +793,7 @@ int main (int argc, char * argv[])
 				}
 			processcommand (cmd);
 			}
-				
+		printf("b4 a free here in main free cmd\n");		
 		free (cmd);
 		cmd = NULL;		
 		} // end while
