@@ -44,6 +44,7 @@ struct fs_diriteminfo
 
 typedef struct
 	{
+	/*****TO DO:  Fill in this structure with what your open/read directory needs  *****/
 	unsigned short  d_reclen;		/*length of this record */
 	unsigned short	dirEntryPosition;	/*which directory entry position, like file pos */
 	uint64_t	directoryStartLocation;		/*Starting LBA of directory */
@@ -60,9 +61,9 @@ struct fs_diriteminfo *fs_readdir(fdDir *dirp);
 int fs_closedir(fdDir *dirp);
 
 char * fs_getcwd(char *buf, size_t size);
-int fs_setcwd(char *buf);   //linux chdir
+int fs_setcwd(char *buf);   	//linux chdir
 int fs_isFile(char * path);	//return 1 if file, 0 otherwise
-int fs_isDir(char * path);		//return 1 if directory, 0 otherwise
+int fs_isDir(char * path);	//return 1 if directory, 0 otherwise
 int fs_delete(char* filename);	//removes a file
 
 
@@ -75,6 +76,8 @@ struct fs_stat
 	time_t    st_accesstime;   	/* time of last access */
 	time_t    st_modtime;   	/* time of last modification */
 	time_t    st_createtime;   	/* time of last status change */
+
+	/* add additional attributes here for your file system */
 	};
 
 int fs_stat(const char *path, struct fs_stat *buf);

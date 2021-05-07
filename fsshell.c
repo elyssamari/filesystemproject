@@ -42,7 +42,7 @@
 	
 	
 	fdDir * fs_opendir(const char *name)
-		{printf("---------------------------inside the fs_opendir in fsshell------------------------\n");
+		{
 		DIR * dir;
 		dir = opendir(name);
 		return ((fdDir *) dir);
@@ -50,7 +50,7 @@
 	
 	struct fs_diriteminfo fsDi;	
 	struct fs_diriteminfo *fs_readdir(fdDir *dirp)
-		{printf("-------------------------inside ds_readdir in fshell-----------------------\n");
+		{
 		DIR *dir;
 		dir = (DIR *) dirp;
 		struct dirent * de;
@@ -73,7 +73,7 @@
 		}
 
 	int fs_stat(const char *path, struct fs_stat *buf)
-		{printf("----------------------------inside fs_stat in fshell--------------------------\n");
+		{
 		struct stat * path_stat;
 		path_stat = (struct stat *) buf;
 		return (stat (path, path_stat));
@@ -81,14 +81,14 @@
 
 	
 	int fs_isFile (char * path)
-		{printf("----------------------inside fs_isFile in fsshell-------------------------\n");
+		{
 		struct stat path_stat;
 		stat(path, &path_stat);
 		return S_ISREG(path_stat.st_mode);
 		}
 	
 	int fs_isDir (char * path)
-		{printf("------------------------inside fs_isDir in fsshell-------------------------\n");
+		{
 		struct stat path_stat;
 		if (stat(path, &path_stat) != 0)
 			return 0;
@@ -155,7 +155,7 @@ static int dispatchcount = sizeof (dispatchTable) / sizeof (dispatch_t);
 
 // Display files for use by ls command
 int displayFiles (fdDir * dirp, int flall, int fllong)
-	{printf("---------------------------inside displayFiles in fsshell----------------------------\n");
+	{
 #if (CMDLS_ON == 1)				
 	if (dirp == NULL)	//get out if error
 		return (-1);
@@ -166,16 +166,16 @@ int displayFiles (fdDir * dirp, int flall, int fllong)
 	di = fs_readdir (dirp);
 	printf("\n");
 	while (di != NULL) 
-		{//printf("b4 the if in while in df\n");
+		{
 		if ((di->d_name[0] != '.') || (flall)) //if not all and starts with '.' it is hidden
 			{
 			if (fllong)
-				{//printf("in if in if in while in df\n");
+				{
 				fs_stat (di->d_name, &statbuf);
 				printf ("%s    %9ld   %s\n", fs_isDir(di->d_name)?"D":"-", statbuf.st_size, di->d_name);
 				}
 			else
-				{//printf("in the else in if in while in df\n");
+				{
 				printf ("%s\n", di->d_name);
 				}
 			}
@@ -198,7 +198,7 @@ int cmd_ls (int argcnt, char *argvec[])
 	int fllong;
 	int flall;
 	char cwd[DIRMAX_LEN];
-	printf("-----------------------inside cmd_ls in fsshell---------------------------------\n");
+	
 	static struct option long_options[] = 
 		{
 			/* These options set their assigned flags to value and return 0 */
@@ -224,7 +224,7 @@ int cmd_ls (int argcnt, char *argvec[])
 #endif
 	fllong = 0;
 	flall = 0;
-	printf("------------------------before the while in ls -----------------------\n");
+	
 	while (1)
 		{
 		c = getopt_long(argcnt, argvec, "alh",
@@ -232,7 +232,7 @@ int cmd_ls (int argcnt, char *argvec[])
 				
 		if (c == -1)
 		   break;
-		   printf("Before the switch in the ls\n");
+
 		switch (c) {
 			case 0:			//flag was set, ignore
 			   printf("Unknown option %s", long_options[option_index].name);
@@ -257,9 +257,9 @@ int cmd_ls (int argcnt, char *argvec[])
 			}
 		}
 	
-printf("-------------------before the if(optind < argcnt) in the ls--------------------------\n");
+
 	if (optind < argcnt)
-		{printf("----------------inside if of the ls--------------------------------\n");
+		{
 		//processing arguments after options
 		for (int k = optind; k < argcnt; k++)
 			{
@@ -284,7 +284,7 @@ printf("-------------------before the if(optind < argcnt) in the ls-------------
 			}		
 		}
 	else   // no pathname/filename specified - use cwd
-		{printf("--------------in the else of the ls----------------------------\n");
+		{
 		char * path = fs_getcwd(cwd, DIRMAX_LEN);	//get current working directory
 		fdDir * dirp;
 		dirp = fs_opendir (path);
@@ -301,7 +301,7 @@ printf("-------------------before the if(optind < argcnt) in the ls-------------
 ****************************************************/
 	
 int cmd_cp (int argcnt, char *argvec[])
-	{printf("----------------------inside cmd_cp in fsshell-------------------------\n");
+	{
 #if (CMDCP_ON == 1)	
 	int testfs_src_fd;
 	int testfs_dest_fd;
@@ -347,7 +347,6 @@ int cmd_cp (int argcnt, char *argvec[])
 ****************************************************/
 int cmd_mv (int argcnt, char *argvec[])
     {
-        printf("-------------------------inside cmd_mv in fsshell-------------------\n");
 #if (CMDMV_ON == 1)                
     // return -99;
     // **** TODO ****  For you to implement
@@ -358,17 +357,15 @@ int cmd_mv (int argcnt, char *argvec[])
     int mv_readcount;
     char buf[BUFFERLEN];
 
-    //copy src to dest and remove src 
+    //copy src to dest and remove src, which is also renaming the destination to the src
     switch (argcnt)
     {
         case 2: //only one name provided
-            printf("----------case 2 in mv-------\n");
             src = argvec[1];
             dest = src;
-            printf("Few arguments! Src: %s\n",src);
+            printf("Few arguments! Src: %s\n",src); //prints few arguments when user doesn't give a dest 
             break;
         case 3: //both names provided
-            printf("--------case 3 in mv-------\n");
             src = argvec[1];
             dest = argvec[2];
             break;
@@ -381,26 +378,26 @@ int cmd_mv (int argcnt, char *argvec[])
     mv_src_fd = b_open (src, O_RDONLY);
     mv_dest_fd = b_open (dest, O_WRONLY | O_CREAT | O_TRUNC);
         
+	//copy files, like in the cp command
         do 
                 {
                 mv_readcount = b_read (mv_src_fd, buf, BUFFERLEN);
-        b_write (mv_dest_fd, buf, mv_readcount);
-    
-        if (fs_isDir (src))
+	        b_write (mv_dest_fd, buf, mv_readcount);
+    	
+	    //removes direcory of file
+   	    if (fs_isDir (src))
                 {
-                return (fs_rmdir (src));
+                return (fs_rmdir (src)); //if direcory removes src
                 }
             if (fs_isFile (src))
                 {
-                return (fs_delete(src));
+                return (fs_delete(src)); //if file deletes src
                 }
                 } while (mv_readcount == BUFFERLEN);
 
         b_close (mv_src_fd);
         b_close (mv_dest_fd);
 
-    
-    
 #endif
     return 0;
     }   
@@ -428,7 +425,7 @@ int cmd_md (int argcnt, char *argvec[])
 *  Remove directory or file commmand
 ****************************************************/
 int cmd_rm (int argcnt, char *argvec[])
-	{printf("----------------------inside cmd_rm in fsshell------------------------\n");
+	{
 #if (CMDRM_ON == 1)
 	if (argcnt != 2)
 		{
@@ -457,7 +454,7 @@ int cmd_rm (int argcnt, char *argvec[])
 *  Copy file from test file system to Linux commmand
 ****************************************************/
 int cmd_cp2l (int argcnt, char *argvec[])
-	{printf("-----------------------------inside cmd_cp2l in fsshell------------------------------\n");
+	{
 #if (CMDCP2L_ON == 1)				
 	int testfs_fd;
 	int linux_fd;
@@ -501,7 +498,7 @@ int cmd_cp2l (int argcnt, char *argvec[])
 *  Copy file from Linux to test file system commmand
 ****************************************************/
 int cmd_cp2fs (int argcnt, char *argvec[])
-	{printf("----------------------------------inside cmd_cp2fs in fsshell-------------------\n");
+	{
 #if (CMDCP2FS_ON == 1)				
 	int testfs_fd;
 	int linux_fd;
@@ -545,7 +542,7 @@ int cmd_cp2fs (int argcnt, char *argvec[])
 *  cd commmand
 ****************************************************/
 int cmd_cd (int argcnt, char *argvec[])
-	{printf("------------------------------------inside cmd_cd in fsshell ------------------------------\n");
+	{
 #if (CMDCD_ON == 1)	
 	if (argcnt != 2)
 		{
@@ -566,12 +563,6 @@ int cmd_cd (int argcnt, char *argvec[])
 	int ret = fs_setcwd (path);
 	if (ret != 0)	//error
 		{
-//testing
-//uint64_t nullv = 0;
-//int exists = startPartitionSystem(path, &nullv, &nullv);
-//if(exists == 0){printf("inside the testing of the cd\n");}
-//not sure how to change the prompt/path
-//testing end
 		printf ("Could not change path to %s\n", path);
 		return (ret);
 		}			
@@ -771,7 +762,7 @@ int main (int argc, char * argv[])
     	init_VCB_blk(volumeSize,blockSize);
 
 	while (1)
-		{printf("-----------------------------inside the while of the shell---------------------\n\n");
+		{
 		cmdin = readline("Prompt > ");
 #ifdef COMMAND_DEBUG
 		printf ("%s\n", cmdin);
@@ -787,8 +778,7 @@ int main (int argc, char * argv[])
 			free (cmd);
 			cmd = NULL;
 			// exit while loop and terminate shell
-			//we should be closing down the partition everytime we end process?
-			close_vcb();
+			close_vcb(); //closing the partition everytime we end process
 			closePartitionSystem();
 			printf("closed partition.\n");
 			break;

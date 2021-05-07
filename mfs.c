@@ -10,9 +10,7 @@ fdDir * fdr;
 struct fs_diriteminfo * dinfo;
 
 int fs_mkdir(const char *pathname, mode_t mode){
-	printf("----------------inside the fs_mkdir in mfs.h----------------\n");
 	printf("Pathname: %s\n",pathname);
-	
 	for(int i = 0; i<vcbp->sroots; i++){
 		if (strcmp(currentDir,dea[i].currentDir)==0 && strcmp(pathname, dea[i].dename)==0){
 			printf("Directory name already exists in this current working directory.\n");
@@ -22,10 +20,10 @@ int fs_mkdir(const char *pathname, mode_t mode){
 
 	char* pname = malloc(10);
 	strcpy(pname,pathname);
-	//int free_space = allocate_free_space(2); //was wh
-	int entry = makede(pname,0,0,1,currentDir);	
+	//int free_space = allocate_free_space(2);
+	int entry = makede(pname,0,0,1,currentDir);
+	
 	if(entry > 0 ){
-		//can free here?
 		free(pname);
 		pname = NULL;
 		return entry;
@@ -91,7 +89,6 @@ made, we save the current working directory name which the directory was made in
 helps us easily track what are files or directories are currently in the currently working directory in which 
 we want to see for the ls command. */
 fdDir * fs_opendir(const char *name){
-	printf("---------------inside the fs_opendir----------------\n");
     	fdr = malloc(sizeof(fdDir));
     
 	for(int i = 0; i<vcbp->sroots; i++){
@@ -133,7 +130,6 @@ struct fs_diriteminfo *fs_readdir(fdDir *dirp){
 
 }
 
-//Progress: not sure
 int fs_closedir(fdDir *dirp){
 	free(dirp);
 	dirp = NULL;
@@ -203,11 +199,7 @@ int fs_setcwd(char *buf){
 	return retVal;
 }
 
-//Progress: good
 int fs_isFile(char * path){	//return 1 if file, 0 otherwise
-	printf("----------------inside the fs_isFile in mfs.c----------------\n");
-	printf("Vcbp in fs_isFile: %ld\n",vcbp->sroots);
-
 	for(int i = 0; i < vcbp->sroots; i++){
 		if (strcmp(dea[i].dename, path) == 0){
 			if (dea[i].ford == 0){
@@ -219,11 +211,7 @@ int fs_isFile(char * path){	//return 1 if file, 0 otherwise
 	return 0;
 }
 
-//Progress: good
 int fs_isDir(char * path){		//return 1 if directory, 0 otherwise
-	printf("----------------inside the fs_isDir in mfs.c----------------\n");
-	printf("Vcbp in fs_isDir: %ld\n",vcbp->sroots);
-	
 	for(int i = 0; i < vcbp->sroots; i++){
 		if(strcmp(dea[i].dename, path) == 0){
 			if (dea[i].ford == 1){
@@ -236,7 +224,6 @@ int fs_isDir(char * path){		//return 1 if directory, 0 otherwise
 
 int fs_delete(char* filename){	//removes a file
 	//release
-printf("--------inside the fs_delete in mfs.c--------------");
 	for(int i = 0; i<vcbp->sroots; i++){
 		if (strcmp(filename,dea[i].dename)==0){
 		   release_free_space(dea[i].loc, dea[i].size);

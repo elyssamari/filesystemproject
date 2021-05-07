@@ -38,7 +38,6 @@
 #include <errno.h>
 #include <math.h>
 #include "fsLow.h"
-//#include "VCB.h"
 
 // Partition structure.  This is the in-memory structure that is
 // also saved to disk that provides the needed information 
@@ -97,14 +96,10 @@ int initializePartition (int fd, uint64_t volSize, uint64_t blockSize)
 	lseek (fd, volSize, SEEK_SET);
 	writeRet = write(fd, buf, blockSize);		
 	fsync(fd);
-	//printf("before that sentence in the init\n");
 	printf("Created a volume with %llu bytes, broken into %llu blocks of %llu bytes.\n",
 				 (ull_t)volSize, (ull_t)blkCount, (ull_t)blockSize);	
 	free (buf);
-	//printf("after the free\n");
 	buf = NULL;
-	//printf("after the buf = NULL\n");
-	//init_VCB_blks(blkCount,blockSize);
 	return PART_NOERROR;
 	}
 //
@@ -163,9 +158,8 @@ int startPartitionSystem (char * filename, uint64_t * volSize, uint64_t * blockS
 			// insure the volume size is a multiple of blockSize
 			uint64_t blockCount = *volSize / blksz;
 			*volSize = blockCount * blksz;
-			//printf("before the initializePartition function\n");
+
 			int initRet = initializePartition (fd, *volSize, *blockSize);
-			//printf("after the initializePartition function\n");
 			close (fd);
 			}
 		else
@@ -175,28 +169,22 @@ int startPartitionSystem (char * filename, uint64_t * volSize, uint64_t * blockS
 			return -1; 
 			}
 		}
-	//printf("before that comment thingy\n");
+
 	// If there is no access issue or we fall through the if it is because we
 	// have initialized the volume file already
 	fd = open(filename, O_RDWR);
-	partitionInfo_p buf = malloc (MINBLOCKSIZE);//VCB_p buff = malloc(MINBLOCKSIZE);
-	uint64_t readCount = read (fd, buf, MINBLOCKSIZE);//read(fd,buff,MINBLOCKSIZE);
-	//printf("before the if statement\n");
+	partitionInfo_p buf = malloc (MINBLOCKSIZE);
+	uint64_t readCount = read (fd, buf, MINBLOCKSIZE);
 	if ((buf->signature == PART_SIGNATURE) && (buf->signature2 == PART_SIGNATURE2))
 		{
 		*volSize = buf->volumesize;
 		*blockSize = buf->blocksize;
 		partInfop = malloc (sizeof(partitionInfo_t)+strlen(buf->volumeName)+4);
-//printf("before the memcpy\n");
 		memcpy(partInfop, buf, sizeof(partitionInfo_t)+strlen(buf->volumeName)+4);
 		partInfop->filename = malloc (strlen(filename)+4);
-//printf("before the strcpy\n");
 		strcpy(partInfop->filename, filename);
-//printf("before the fd\n");
 		partInfop->fd = fd;
-//printf("b4 the part-noerror\n");
 		retVal = PART_NOERROR;
-//printf("what is the retVal %d\n", retVal);
 		}
 	else
 		{
@@ -204,15 +192,13 @@ int startPartitionSystem (char * filename, uint64_t * volSize, uint64_t * blockS
 		*blockSize = 0;
 		retVal = PART_ERR_INVALID;
 		}
-//printf("after the if statement\n");
+
 	free (buf);
-//printf("at the if staement towards the end\n");
 	if (retVal != PART_NOERROR)
 		close (fd);
-printf("before the return\n");
 	return retVal;
 	}
-//int getdval(){printf("inside the getdval()\nwhat is fd %d\n",partInfop->fd);return partInfop->fd; }
+
 int closePartitionSystem ()
 	{
 	fsync(partInfop->fd);
@@ -227,9 +213,9 @@ int closePartitionSystem ()
 	
 //Check to see if Write or read is beyond the capacity of the volume
 uint64_t LBAwrite (void * buffer, uint64_t lbaCount, uint64_t lbaPosition)
-	{//printf("-------------------------where are we writing to -----------------\n");
+	{
 	struct flock fl;
-	printf("-------------------------writing to: %ld ---------------------\n",lbaPosition);
+
 	if (partInfop == NULL)		//System Not initialized
 		return 0;
 		
