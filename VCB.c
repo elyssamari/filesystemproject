@@ -167,14 +167,16 @@ uint64_t init_free_space(){
 int allocate_free_space(int nblksn){
 	printf("------------inside of the allocate free space ----------------------\n");
 	printf("%s\n",bitmap);
-	int start = 0;				//track starting block index
+	int start = -1;				//track starting block index
 	int lasti = 0;				//track where it left at to get continous blks
 	int count = 0;				//track if the count matches blksneeded
 	printf("what is nblk %ld\n",vcbp->nblk);
 	for(int i = 0; i < vcbp->nblk/8; i++){
 		for(int j = 0; j < 8; j++){
 			if((bitmap[i] & (1 << j)) == 0){
-				if(start ==0){start = (i * 8) + j+1;}
+printf("AFTER IF CHECK BM WHAT IS FREE %d\n",(i * 8) + j);
+				if(start == -1){
+printf("WHEN ARE WE IN HERE BM i %d, j %d, startf %d\n",i,j,(i * 8) + j);start = (i * 8) + j;}
 				bitmap[i] |= 1 << j;
 				count ++;
 				lasti = (i*8)+j;
@@ -184,7 +186,7 @@ LBAwrite(bitmap,vcbp -> sffs, vcbp -> sfs);
 				}
 			}else{
 				if(start > 0){
-					start = 0;
+					start = -1;
 					count = 0;
 				}
 			}
@@ -269,9 +271,11 @@ void set_free_space(int LBA, int count){
 void release_free_space(int LBA, int count){
 	printf("-------------start of release free space ----------------\n");
 	int index = (LBA / 8);			//each index of bitmap holds 8 so LBA/8 gives idx
-	int innerindex = (LBA % 8)-1;		//need the innerindex of the bitmap[idx]
+	int innerindex = (LBA % 8);		//need the innerindex of the bitmap[idx]
+	//if(innerindex == -1){innerindex = 0;}
+	//if(innerindex 
 	int track = 0;				//to keep track of how much cleared
-printf("WHERE RELEASED %d \n",index+innerindex);
+printf("WHERE RELEASED %d \n",(index*8)+innerindex);
 printf("WHERE RELEASED index %d innerindex %d\n",index,innerindex);
 	while (track < count){ 
 		bitmap[index] &= ~(1<<innerindex);	//clear bit at inneridx of the bitmap[idx]
