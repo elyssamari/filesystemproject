@@ -42,11 +42,11 @@ char * bitmap;		//use this to call on bitmap
 //I'm unsure if that is correct or if I'm supposed to call it in the start partition function
 
 int init_VCB_blk(uint64_t  nblk, uint64_t  sblk){
-	printf("---------------------------inside the init_VCB_blk------------------------\n");
+	//printf("---------------------------inside the init_VCB_blk------------------------\n");
 	int vol_created = getval();
 	
 	if (vol_created == 1){ //check if volume was created
-	   printf("End early, already init-ed\n");
+	   //printf("End early, already init-ed\n");
 	   return 0;
 	}
 	//vcbp = malloc(sblk);			//vcb is size of one block
@@ -72,15 +72,9 @@ int init_VCB_blk(uint64_t  nblk, uint64_t  sblk){
 	vcbp -> signu = Signu;
 	vcbp -> sffst = 0x657a697365657266;	//words for free space size eziseerf
 	
-	printf("Writing at vcbp\n");
 	LBAwrite(vcbp, 1, 0);		//writing the vcb, that's the red rectangle I have been screenshotting
-	//printf("what is in dea[0] %s, %ld\n dea[1] %s, %ld\n",dea[0]->name,dea[0]->loc, dea[1]->name,dea[1]->loc);
-	//free(vcbp);			//free the buffers
-	//free(bitmap);
-	//free(dea);
 
-	printf("Bitmap in initvcb: %s\n",bitmap);
-	printf("End late, was not init-ed\n");
+	//printf("End late, was not init-ed\n");
 	return 0;
 					//I should be freeing everything here right?
 	}
@@ -90,21 +84,21 @@ void close_vcb(){
 	free(bitmap);
 	free(dea);
 }
-//init the free space
 
+//to check if volume exist 
 int getval(){
-	printf("-----------------------------inside the getval()--------------------------\n");
+	//printf("-----------------------------inside the getval()--------------------------\n");
 	vcbp = malloc(512);
-
+	//see if the volume already exit, if so, set the structs to it
 	uint64_t LBA_read = LBAread(vcbp,1,0);
-
+	//not our volume
 	if (vcbp->signu == 0){
 	   //free(vcbp);
 	   return 0;
 	}
-
+	//check if it's our volume
 	if (vcbp->signu==Signu){
-
+	//read and set structs
            bitmap = (char*)calloc(((vcbp->sffs)*(vcbp->sblk)),sizeof(char));
 
 	   LBAread(bitmap,vcbp->sffs,vcbp->sfs);
@@ -113,28 +107,19 @@ int getval(){
 
 	   LBAread(dea,vcbp->srootbs,vcbp->sroot);
 
-
-       	//printfs for testing
-	/*printf("-----------------------------inside getval()---------------------------\n");
-	printf("sblk: %ld\n",vcbp->sblk);
-	printf("Lba i of dea: %ld\n",vcbp->sroot);
-	printf("Sfs: %ld\n",vcbp->sfs);
-	printf("Size of a dea: %ld\n",dea[4].size);
-	printf("Bitmap in the getval: %s\n",bitmap);	*/
 		
-	return 1;
+	   return 1;
 	}
 	
-	//printf("what is buff %s\n",buff);
 	return 0;
 }
-
+//init free space
 uint64_t init_free_space(){
 	printf("----------------------------inside the init_free_space-----------------------\n");
 	//printf("what is inside vcbp:\nnumblks %ld\nsizeblk %ld\n",vcbp->nblk, vcbp->sblk);
 	uint64_t bytesN = (vcbp -> nblk/8);	//there's 8 bits per byte
 	uint64_t blksneed;
-	
+	//check how much blocks needed for bitmap
 	if ((bytesN/vcbp->sblk)==0) {
 	   blksneed = 1;
 	} else if ((bytesN%vcbp->sblk)!=0){
@@ -143,19 +128,20 @@ uint64_t init_free_space(){
 
 	vcbp->sffs = blksneed;
 	bitmap = (char*)calloc((blksneed*(vcbp->sblk)),sizeof(char));
-
+//set to zero, might be unessary, i think i added this when we got those weird symbols in hexdump
 	for(int j = 0; j< (bytesN); j++){
 		for(int k = 0; k < 8; k++){
 		   bitmap[j] |= 0 << k;
 		}
 	}
-
+	//set the bitmap in the bitmap including vcb
 	for(int i = 0; i<=blksneed; i++){
 //printf("/-/-/-/-/-/-/-/-/-/-/ init free what is i %d\n",i);
 	   bitmap[0] |= 1<<i;
 	}
 
-	printf("writing at bitmap\n");
+	//printf("writing at bitmap\n");
+
 	uint64_t LBA_write = LBAwrite(bitmap,blksneed,1); //write the bitmap
 
 	return (LBA_write);	//I'm not sure what it should return
@@ -166,82 +152,35 @@ uint64_t init_free_space(){
 //find if there is continous nblksn amount of blocks free for use
 int allocate_free_space(int nblksn){
 	printf("------------inside of the allocate free space ----------------------\n");
-	printf("%s\n",bitmap);
+	//printf("%s\n",bitmap);
 	int start = -1;				//track starting block index
-	int lasti = 0;				//track where it left at to get continous blks
+	//int lasti = 0;				//track where it left at to get continous blks
 	int count = 0;				//track if the count matches blksneeded
-	printf("what is nblk %ld\n",vcbp->nblk);
-	for(int i = 0; i < vcbp->nblk/8; i++){
-		for(int j = 0; j < 8; j++){
-			if((bitmap[i] & (1 << j)) == 0){
-printf("AFTER IF CHECK BM WHAT IS FREE %d\n",(i * 8) + j);
-				if(start == -1){
-printf("WHEN ARE WE IN HERE BM i %d, j %d, startf %d\n",i,j,(i * 8) + j);start = (i * 8) + j;}
-				bitmap[i] |= 1 << j;
-				count ++;
-				lasti = (i*8)+j;
-				if(count == nblksn){	
+	//printf("what is nblk %ld\n",vcbp->nblk);
+	for(int i = 0; i < vcbp->nblk/8; i++){	//go through bitmap array
+		for(int j = 0; j < 8; j++){	//go through bits of the char in bitmap
+			if((bitmap[i] & (1 << j)) == 0){//check for unset bit
+//printf("AFTER IF CHECK BM WHAT IS FREE %d\n",(i * 8) + j);
+				if(start == -1){	//check if start is set
+//printf("WHEN ARE WE IN HERE BM i %d, j %d, startf %d\n",i,j,(i * 8) + j);
+					start = (i * 8) + j;}//set start block number
+				bitmap[i] |= 1 << j;	//set the bit
+				count ++;		//update count
+				//lasti = (i*8)+j;	//don't think we need
+				if(count == nblksn){	//if enough continous block return start and write the changes
 LBAwrite(bitmap,vcbp -> sffs, vcbp -> sfs);
 					return start;
 				}
-			}else{
+			}else{//if here, bit was set and there's a break in the continuity
 				if(start > 0){
-					start = -1;
-					count = 0;
+					start = -1;	//start back at -1
+					count = 0;	//undo count
 				}
 			}
 		}
 	}
-	/*for(int i = 0; i < vcbp->nblk/8; i++){
-		//printf("what is bitmap at i: %d, bitmap: %d\n",i,bitmap[i]);
-		int widx = (log(bitmap[i])/log(2))+1;
-			
-		//printf("where is it free? what is widx %d\n",widx);
-		int count = 0;
-		if((widx < -1) && !(bitmap[i] & (1 << 7)) != 0){widx = 0;}
-		if((widx < -1) && (bitmap[i] & (1 << 7)) != 0){
-//printf("b4 continue\n");
-			continue;}
-			if(widx < 7){
-				start = (i*8)+widx;
-				lasti = widx;
-				while(count < nblksn){
-					if((bitmap[i] & (1 << widx)) == 0){
-						if(lasti == widx){
-printf("in the if what is i %d, widx %d\n",i,widx);
-printf("what is count %d\n",count);
-							bitmap[i] |= 1 << widx;
-							count++;
-							widx++;
-							lasti = widx;
-						}else{
-printf("WHATS UP WITH THE BUITMAP\n");
-							start = (i*8)+widx;
-							lasti=widx;
-							count = 0;
-						}
-					}
-					if(widx == 8){
-						printf("WHAT's UP WITH THE BITMAP");
-						i++; widx = 0;lasti=widx;
-					}
-					if((i-1) == (vcbp->nblk/8)){
-						printf("SOMETHING UP WITH THE BITMAP");
-						return -1;
-					}
-				}
-				if(count == nblksn){
-					printf("what is i: %d ? bit: %d\n",i,bitmap[i]);
-					printf("what is actual count %d\n",((i*8)+widx));
- 					break;
-				}
-			}
-		}*/
 	
-	printf("Sfs: %ld and sffs: %ld\n",vcbp->sfs, vcbp->sffs);
-	//LBAwrite(bitmap,vcbp -> sffs, vcbp -> sfs);
-	printf("Sfs: %ld and sffs: %ld\n",vcbp->sfs, vcbp->sffs);
-	printf("Start given: %d\n",start);
+	//printf("Start given: %d\n",start);
 	return start;
 }
 
@@ -249,7 +188,7 @@ printf("WHATS UP WITH THE BUITMAP\n");
 //set the bits starting at LBA til count, not sure about this one
 //seems like it could be done in allocate but then we should actually check if the block
 //has been written to. if this, then either we gotta store more values or put more paramters
-void set_free_space(int LBA, int count){
+/*void set_free_space(int LBA, int count){
 	int index = (LBA / 8);			//each index of bitmap holds 8 so LBA/8 gives idx
 	int innerindex = (LBA % 8)-1;		//need the innerindex of the bitmap[idx]
 	int track = 0;				//to keep track of how much cleared
@@ -265,18 +204,18 @@ void set_free_space(int LBA, int count){
 		}
 	}
 	//uint64_t wroten = LBAwrite(bitmap,vcbp->sffs,vcbp->sfs);
-}
+}*/
 
 //unset the bits starting at LBA til count
 void release_free_space(int LBA, int count){
-	printf("-------------start of release free space ----------------\n");
+	//printf("-------------start of release free space ----------------\n");
 	int index = (LBA / 8);			//each index of bitmap holds 8 so LBA/8 gives idx
 	int innerindex = (LBA % 8);		//need the innerindex of the bitmap[idx]
 	//if(innerindex == -1){innerindex = 0;}
 	//if(innerindex 
 	int track = 0;				//to keep track of how much cleared
-printf("WHERE RELEASED %d \n",(index*8)+innerindex);
-printf("WHERE RELEASED index %d innerindex %d\n",index,innerindex);
+//printf("WHERE RELEASED %d \n",(index*8)+innerindex);
+//printf("WHERE RELEASED index %d innerindex %d\n",index,innerindex);
 	while (track < count){ 
 		bitmap[index] &= ~(1<<innerindex);	//clear bit at inneridx of the bitmap[idx]
 		track++;				//update track
@@ -287,24 +226,25 @@ printf("WHERE RELEASED index %d innerindex %d\n",index,innerindex);
 			index++;		//update idx to match the new inneridx
 		}
 	}
+	//write changes to bitmap
 	uint64_t LBA_write1 = LBAwrite(bitmap,vcbp->sffs,vcbp->sfs);
-	printf("--------------end of release free space-----------------\n");
+	//printf("--------------end of release free space-----------------\n");
 }
 
 uint64_t makede(char*fname, uint64_t index,uint64_t sz,uint64_t fod, char *currentDir){
-	printf("Sroots: %ld\n",vcbp->sroots);
+	//printf("Sroots: %ld\n",vcbp->sroots);
 
 	for (int i = 0; i<vcbp->sroots; i++){
 	    //printf("if its not 0 then what is it? %ld\n",dea[i].size);
-        	if (dea[i].size == -1){
+        	if (dea[i].size == -1){		//find free spot in de array
 		   //printf("trying to set a dirctory here n makede\n");
           	   strcpy(dea[i].dename,fname);
            	   dea[i].namet = 0x74656d616e726964;	//name on hex dump (temanrid)
                    dea[i].loc = index; 			//location of directory entry
                    dea[i].ford = fod;			//file (0) or directory (1)
                    dea[i].size = sz;			//size of directory entry
-                   strcpy(dea[i].currentDir, currentDir);
-                   LBAwrite(dea, 10, vcbp->sroot);
+                   strcpy(dea[i].currentDir, currentDir);//copy name of dir
+                   LBAwrite(dea, 10, vcbp->sroot);	//write changes
             	   return i;
         	}
     	}
@@ -314,22 +254,22 @@ uint64_t makede(char*fname, uint64_t index,uint64_t sz,uint64_t fod, char *curre
 //create DE, put into DE array, LBA write, mark them out in free space 
 //pretty sure i'm not doing this one right.
 uint64_t createDir(char *name ,uint64_t i){
-	printf("-----------------inside the create directory-----------------------\n");
-	
+	//printf("-----------------inside the create directory-----------------------\n");
+	//get blocks for de array
 	uint64_t where_start = allocate_free_space(10);
-	printf("------------------where is start  %ld \nafter allocate-------------\n",where_start);
+	//printf("------------------where is start  %ld \nafter allocate-------------\n",where_start);
 	
-	dea = malloc(10*(vcbp->sblk));
-	vcbp->srootbs = 10;
-	uint64_t where_stop = (10*(vcbp->sblk))/sizeof(de_t);
-	vcbp->sroots = where_stop;
-	char*test_null = "NULL\0";
+	dea = malloc(10*(vcbp->sblk));				//10 blocks for the de array
+	vcbp->srootbs = 10;					//set de array size in vcb
+	uint64_t where_stop = (10*(vcbp->sblk))/sizeof(de_t);	//how many de can fit in de array
+	vcbp->sroots = where_stop;				//set how many fit
+	char*test_null = "NULL\0";				//check null
 	
-	if (strcmp(name,test_null)==0){
-		for (int g = 0; g<where_stop; g++){
+	if (strcmp(name,test_null)==0){				//check if it's for init
+		for (int g = 0; g<where_stop; g++){		//init size of de to -1
 		    dea[g].size = -1;
 		}
-
+	    //setting of the child and parent of root
 	    strcpy(dea[0].dename,".");
 	    dea[0].loc = 0; 
 	    dea[0].ford = 1;
@@ -342,23 +282,9 @@ uint64_t createDir(char *name ,uint64_t i){
 	    dea[1].ford = 1;
 	    dea[1].size = 0;
 
-//start of test
-	//     strcpy(dea[2].dename,"istest");
-	//     dea[2].namet = 0x74656d616e726964;
-	//     dea[2].loc = 4; 
-	//     dea[2].ford = 0;
-	//     dea[2].size = 1;
-	//     char*bytes = malloc(512);
-   	//     strcpy(bytes,tblk);
-	//     uint64_t LBA_write2  = LBAwrite(bytes,1,4);
-		
-	// if (LBA_write2 == 0){
-	//    printf("---------------------------write didn't work------------------------\n");}
-	//    free(bytes);
-//end of test
 	}
-
+	//have to write those changes
 	LBAwrite(dea, 10, vcbp->sroot);
-	printf("---------------------------end of directory------------------------\n");
+	//printf("---------------------------end of directory------------------------\n");
 	return where_start;
 }
