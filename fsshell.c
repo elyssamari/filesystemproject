@@ -346,39 +346,64 @@ int cmd_cp (int argcnt, char *argvec[])
 *  Move file commmand
 ****************************************************/
 int cmd_mv (int argcnt, char *argvec[])
-	{
-		printf("-------------------------inside cmd_mv in fsshell-------------------\n");
-#if (CMDMV_ON == 1)				
-	// return -99;
-	// **** TODO ****  For you to implement
-	char * src;
-	char * dest;	
-	switch (argcnt)
-	{
-		case 2: //only one name provided
-			src = argvec[1];
-			dest = src;
-			break;
-		case 3: //both names provided
-			src = argvec[1];
-			dest = argvec[2];
-			break;
-		default:
-			printf("Usage: mv src dest\n");
-			return -1;
-	}
-	printf("src: %s\ndest: %s\n", src, dest);
-	for (int i = 0; i < vcbp->sroots; i++) {
-		if (strcmp(src, dea[i].dename) == 0) {
-			printf("dea[i].dename: %s\n", dea[i].dename);
-			strcpy(dea[i].currentDir, dest);
-		}
-	}
-	
-#endif
-	return 0;
-	}
+    {
+        printf("-------------------------inside cmd_mv in fsshell-------------------\n");
+#if (CMDMV_ON == 1)                
+    // return -99;
+    // **** TODO ****  For you to implement
+    char * src;
+    char * dest;    
+    int mv_src_fd;
+    int mv_dest_fd;
+    int mv_readcount;
+    char buf[BUFFERLEN];
 
+    //copy src to dest and remove src 
+    switch (argcnt)
+    {
+        case 2: //only one name provided
+            printf("----------case 2 in mv-------\n");
+            src = argvec[1];
+            dest = src;
+            printf("Few arguments! Src: %s\n",src);
+            break;
+        case 3: //both names provided
+            printf("--------case 3 in mv-------\n");
+            src = argvec[1];
+            dest = argvec[2];
+            break;
+        default:
+            printf("Usage: mv src dest\n");
+            return -1;
+    }
+    printf("src: %s\ndest: %s\n", src, dest);
+
+    mv_src_fd = b_open (src, O_RDONLY);
+    mv_dest_fd = b_open (dest, O_WRONLY | O_CREAT | O_TRUNC);
+        
+        do 
+                {
+                mv_readcount = b_read (mv_src_fd, buf, BUFFERLEN);
+        b_write (mv_dest_fd, buf, mv_readcount);
+    
+        if (fs_isDir (src))
+                {
+                return (fs_rmdir (src));
+                }
+            if (fs_isFile (src))
+                {
+                return (fs_delete(src));
+                }
+                } while (mv_readcount == BUFFERLEN);
+
+        b_close (mv_src_fd);
+        b_close (mv_dest_fd);
+
+    
+    
+#endif
+    return 0;
+    }   
 /****************************************************
 *  Make Directory commmand
 ****************************************************/
