@@ -169,7 +169,7 @@ int b_read (int fd, char * buffer, int count){
 		if(farr[fd].blk_count == farr[fd].file_length && farr[fd].bufferdata ==0){
 			return dataCopied;
 		}
-		//if(farr[fd].fbuffer[farr[fd].fidx - farr[fd].bufferdata] == '\0'){
+		//if(farr[fd].fbuffer[farr[fd].fidx - farr[fd].bufferdata] == 0){
 		//	return dataCopied;
 		//}
 		/*if (farr[fd].bufferdata <= 0){
@@ -234,7 +234,15 @@ int b_write (int fd, char * buffer, int count){
 //printf("after sec string cpy\n");
 	   farr[fd].fbuffer[farr[fd].bufferdata]='\0';
 	   //yeet[farr[fd].bufferdata]='\0';
+
 	   strncpy(yeet,farr[fd].fbuffer,farr[fd].bufferdata+1);
+yeet[farr[fd].bufferdata]='\0';
+printf("%s",yeet);
+	farr[fd].bufferdata++;
+	   while(farr[fd].bufferdata  < 512){
+		yeet[farr[fd].bufferdata]=0;
+		farr[fd].bufferdata++;
+	   }
 	   LBAwrite(yeet,1, farr[fd].startf+farr[fd].blk_count);
 	   farr[fd].blk_count ++;
 	   vcbp->sblk = sav;
@@ -256,8 +264,9 @@ int b_write (int fd, char * buffer, int count){
 				if(newstart == -1){printf("No more space\n");return -1;}
 				if(newstart == (farr[fd].startf+farr[fd].blk_count)){
 					farr[fd].file_length = farr[fd].file_length + (2*(farr[fd].file_length));
-					dea[farr[fd].didx].size = farr[fd].blk_count;
+					dea[farr[fd].didx].size = farr[fd].file_length;
 					LBAwrite(dea,10,vcbp->sroot);
+printf("WHAT IS THE NEW WRITTEN SIZE %ld\n",dea[farr[fd].didx].size);
 				}
 			}
 		//printf("b4 lbawrite of b_write what's wrong with blockisze %ld\n",vcbp->sblk);
@@ -310,17 +319,22 @@ void b_close (int fd){
 	if (farr[fd].bufferdata > 0){
 printf("INSIDE THE IF BUFFERDATA ONCE FOR WRITE\n");
 	   b_write(fd, farr[fd].fbuffer, 0);
-		if(farr[fd].blk_count < farr[fd].file_length){
+		/*if(farr[fd].blk_count < farr[fd].file_length){
 	   		release_free_space(farr[fd].blk_count + farr[fd].startf, farr[fd].file_length-farr[fd].blk_count );
 			printf("WHERE ARE WE FREEING TO %d HOW MUCH %d\n",farr[fd].blk_count + farr[fd].startf, farr[fd].file_length-farr[fd].blk_count);
 			dea[farr[fd].didx].size = farr[fd].blk_count;
 			printf("WHAT IS THE NEW SIZE %ld\n",dea[farr[fd].didx].size);
 			LBAwrite(dea,10,vcbp->sroot);
-		}else{
-			
-		}
+		}*/
 	}
-	
+	if(farr[fd].blk_count < farr[fd].file_length){
+	   		release_free_space(farr[fd].blk_count + farr[fd].startf, farr[fd].file_length-farr[fd].blk_count );
+			printf("WHERE ARE WE FREEING TO %d HOW MUCH %d\n",farr[fd].blk_count + farr[fd].startf, farr[fd].file_length-farr[fd].blk_count);
+			dea[farr[fd].didx].size = farr[fd].blk_count;
+			printf("WHAT IS THE NEW SIZE %ld\n",dea[farr[fd].didx].size);
+			LBAwrite(dea,10,vcbp->sroot);
+		}
+	printf("WHAT IS THE NEW SIZE %ld\n",dea[farr[fd].didx].size);
 	//i think we should be freeing its buffer since malloc was called 
 	//but not sure if this is freed elsewhere as well? didnt seem like it
 	free(farr[fd].fbuffer);
