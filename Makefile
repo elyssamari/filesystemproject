@@ -34,15 +34,15 @@
 #
 
 
-ROOTNAME=fsLowDemo
+ROOTNAME=fsshell
 HW=
 FOPTION=
-RUNOPTIONS=SampleVolume 10000000 512
+RUNOPTIONS=Volume 10000000 512
 CC=gcc
 CFLAGS= -g -I.
 LIBS =pthread
 DEPS = 
-ADDOBJ= fsLow.o
+ADDOBJ= fsLow.o VCB.o b_io.o mfs.o
 OBJ = $(ROOTNAME)$(HW)$(FOPTION).o $(ADDOBJ)
 
 %.o: %.c $(DEPS)

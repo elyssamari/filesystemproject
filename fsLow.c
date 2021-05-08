@@ -158,7 +158,7 @@ int startPartitionSystem (char * filename, uint64_t * volSize, uint64_t * blockS
 			// insure the volume size is a multiple of blockSize
 			uint64_t blockCount = *volSize / blksz;
 			*volSize = blockCount * blksz;
-				
+
 			int initRet = initializePartition (fd, *volSize, *blockSize);
 			close (fd);
 			}
@@ -169,7 +169,7 @@ int startPartitionSystem (char * filename, uint64_t * volSize, uint64_t * blockS
 			return -1; 
 			}
 		}
-	
+
 	// If there is no access issue or we fall through the if it is because we
 	// have initialized the volume file already
 	fd = open(filename, O_RDWR);
@@ -192,7 +192,7 @@ int startPartitionSystem (char * filename, uint64_t * volSize, uint64_t * blockS
 		*blockSize = 0;
 		retVal = PART_ERR_INVALID;
 		}
-		
+
 	free (buf);
 	if (retVal != PART_NOERROR)
 		close (fd);
@@ -215,7 +215,7 @@ int closePartitionSystem ()
 uint64_t LBAwrite (void * buffer, uint64_t lbaCount, uint64_t lbaPosition)
 	{
 	struct flock fl;
-	
+
 	if (partInfop == NULL)		//System Not initialized
 		return 0;
 		

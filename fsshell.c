@@ -1,7 +1,7 @@
 /**************************************************************
-* Class:  CSC-415
-* Name: Professor Bierman
-* Student ID: N/A
+* Class:  CSC-415-01 Spring 2021
+* Name: Professor Bierman, Survivors...
+* Student ID: 918266744, 918403595, 918459248, 918441685
 * Project: Basic File System
 *
 * File: fsShell.c
@@ -59,13 +59,13 @@
 			return (NULL);
 			
 			
-		fsDi.d_reclen = (unsigned short) sizeof (fsDe);
+		fsDi.d_reclen = (unsigned short) sizeof (fsDi);
 		fsDi.fileType = de->d_type;
 		strcpy(fsDi.d_name, de->d_name);
 		return (&fsDi);
 		}
 		
-	int fs_closedir(fs_DIR *dirp)
+	int fs_closedir(fdDir *dirp)
 		{
 		DIR *dir;
 		dir = (DIR *) dirp;
@@ -106,15 +106,15 @@
 #define DIRMAX_LEN		4096
 
 /****   SET THESE TO 1 WHEN READY TO TEST THAT COMMAND ****/
-#define CMDLS_ON	0
-#define CMDCP_ON	0
-#define CMDMV_ON	0
-#define CMDMD_ON	0
-#define CMDRM_ON	0
-#define CMDCP2L_ON	0
-#define CMDCP2FS_ON	0
-#define CMDCD_ON	0
-#define CMDPWD_ON	0
+#define CMDLS_ON	1
+#define CMDCP_ON	1
+#define CMDMV_ON	1
+#define CMDMD_ON	1
+#define CMDRM_ON	1
+#define CMDCP2L_ON	1
+#define CMDCP2FS_ON	1
+#define CMDCD_ON	1
+#define CMDPWD_ON	1
 
 
 typedef struct dispatch_t
@@ -198,7 +198,7 @@ int cmd_ls (int argcnt, char *argvec[])
 	int fllong;
 	int flall;
 	char cwd[DIRMAX_LEN];
-		
+	
 	static struct option long_options[] = 
 		{
 			/* These options set their assigned flags to value and return 0 */
@@ -224,9 +224,9 @@ int cmd_ls (int argcnt, char *argvec[])
 #endif
 	fllong = 0;
 	flall = 0;
-
+	
 	while (1)
-		{	
+		{
 		c = getopt_long(argcnt, argvec, "alh",
 				long_options, &option_index);
 				
@@ -257,7 +257,7 @@ int cmd_ls (int argcnt, char *argvec[])
 			}
 		}
 	
-	
+
 	if (optind < argcnt)
 		{
 		//processing arguments after options
@@ -291,6 +291,7 @@ int cmd_ls (int argcnt, char *argvec[])
 		return (displayFiles (dirp, flall, fllong));
 		}
 #endif
+
 	return 0;
 	}
 
@@ -334,6 +335,7 @@ int cmd_cp (int argcnt, char *argvec[])
 		readcnt = b_read (testfs_src_fd, buf, BUFFERLEN);
 		b_write (testfs_dest_fd, buf, readcnt);
 		} while (readcnt == BUFFERLEN);
+
 	b_close (testfs_src_fd);
 	b_close (testfs_dest_fd);
 #endif
@@ -344,14 +346,69 @@ int cmd_cp (int argcnt, char *argvec[])
 *  Move file commmand
 ****************************************************/
 int cmd_mv (int argcnt, char *argvec[])
-	{
-#if (CMDMV_ON == 1)				
-	return -99;
-	// **** TODO ****  For you to implement	
-#endif
-	return 0;
+    {
+#if (CMDMV_ON == 1) 
+	int destExist = -1; // if dest exist, 0, if no -1 
+	int destFile = -1; // if dest is a file, 0, if no -1
+	int srcExist = -1; // if src exist, 0, if no -1
+	char * src = argvec[1];
+	char * dest = argvec[2];
+
+	for(int i = 0; i<vcbp->sroots; i++){
+		if (strcmp(currentDir, dea[i].currentDir)==0 && strcmp(src, dea[i].dename)==0){
+			srcExist = 0;
+		} 
 	}
 
+	if (srcExist == -1) {
+		printf("Error: Source does not exist.\nUsage: mv src dest\n");
+		return -1;
+	}
+
+	// If dest is a file and exists in the current working directory, we return -1 because we can not possibly 
+	// move a directory for example into a text file. 
+	for(int i = 0; i<vcbp->sroots; i++){
+		if (strcmp(dest, dea[i].dename)==0 && strcmp(currentDir, dea[i].currentDir)==0){
+			destExist = 0;
+			if (dea[i].ford == 0) {
+				destFile = 0;
+			}
+			break;
+		} 
+	}
+	
+	if (destFile == 0 && destExist == 0) {
+		printf("Error: The destination is a file that already exists.\n");
+		return -1;
+	} else if (destFile == -1 && destExist == -1){
+		// However, if the dest name does not exist, we can rename the existing src to dest. Same goes for directories.
+		for(int i = 0; i<vcbp->sroots; i++){
+			if (strcmp(src, dea[i].dename)==0 && strcmp(currentDir, dea[i].currentDir)==0){
+		   		strcpy(dea[i].dename, dest);
+				LBAwrite(dea, vcbp->srootbs, vcbp->sroot);
+				return 0;
+			}
+		} 
+	}
+	
+	// Moving a directory or file into a directory
+	char cdDir[100];
+  	strcpy(cdDir, currentDir);
+  	strcat(cdDir, "/");
+      	strcat(cdDir, dest);
+
+	for(int i = 0; i<vcbp->sroots; i++){
+		if (strcmp(currentDir, dea[i].currentDir)==0 && strcmp(src, dea[i].dename)==0){
+		   	strcpy(dea[i].currentDir, cdDir);
+			LBAwrite(dea, vcbp->srootbs, vcbp->sroot);
+			return 0;
+		} 
+	}
+
+	printf("Error: Source does not exist.\nUsage: mv src dest\n");
+#endif
+	return -1;
+    }   
 /****************************************************
 *  Make Directory commmand
 ****************************************************/
@@ -691,12 +748,27 @@ void processcommand (char * cmd)
 int main (int argc, char * argv[])
 	{
 	char * cmdin;
-	char * cmd;
-	HIST_ENTRY *he;
-		
-	using_history();
-	stifle_history(200);	//max history entries
-	
+        char * cmd;
+        HIST_ENTRY *he;
+
+    	if(argc < 4){
+		printf("Usage: ./fsshell volumeName volumeSize blockSize\n");
+		return 0;
+	}
+
+    	using_history();
+    	stifle_history(200);    //max history entries
+
+   	char * filename;
+    	uint64_t volumeSize;
+    	uint64_t blockSize;
+    	filename = argv[1];
+    	volumeSize = atoll (argv[2]);
+    	blockSize = atoll (argv[3]);
+
+    	startPartitionSystem (filename, &volumeSize, &blockSize);
+    	init_VCB_blk(volumeSize,blockSize);
+
 	while (1)
 		{
 		cmdin = readline("Prompt > ");
@@ -714,6 +786,8 @@ int main (int argc, char * argv[])
 			free (cmd);
 			cmd = NULL;
 			// exit while loop and terminate shell
+			close_vcb(); //closing the partition everytime we end process
+			closePartitionSystem();
 			break;
 			}
 			
@@ -726,7 +800,7 @@ int main (int argc, char * argv[])
 				}
 			processcommand (cmd);
 			}
-				
+
 		free (cmd);
 		cmd = NULL;		
 		} // end while

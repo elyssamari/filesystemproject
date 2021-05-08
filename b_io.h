@@ -1,8 +1,8 @@
 /**************************************************************
-* Class:  CSC-415-0# 
-* Name:
-* Student ID:
-* Project: File System Project
+* Class:  CSC-415-01 Spring 2021
+* Name: Annie Liao, Vivian Kuang, Elyssa Tapawan, Joanne Wong
+* Student ID: 918266744, 918403595, 918459248, 918441685
+* Project: Basic File System
 *
 * File: b_io.h
 *
@@ -13,6 +13,7 @@
 #ifndef _B_IO_H
 #define _B_IO_H
 #include <fcntl.h>
+
 
 int b_open (char * filename, int flags);
 int b_read (int fd, char * buffer, int count);
