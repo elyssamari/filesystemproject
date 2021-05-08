@@ -1,23 +1,19 @@
 /**************************************************************
-* Class:  CSC-415
-* Name: Professor Bierman
-* Student ID: N/A
+* Class:  CSC-415-01 Spring 2021
+* Name: Annie Liao, Vivian Kuang, Elyssa Tapawan, Joanne Wong
+* Student ID: 918266744, 918403595, 918459248, 918441685
 * Project: Basic File System
 *
-* File: fsLow.h
+* File: mfs.h
 *
-* Description: 
-*	This is the file system interface.
-*	This is the interface needed by the driver to interact with
-*	your filesystem.
-*
+* Description: This is the header file of the mfs.c.
+*	
 **************************************************************/
 #ifndef _MFS_H
 #define _MFS_H
 #include <sys/types.h>
 #include <unistd.h>
 #include <time.h>
-
 #include "b_io.h"
 #include "VCB.h"
 #include <dirent.h>
@@ -34,6 +30,7 @@ typedef u_int32_t uint32_t;
 
 extern int var;
 extern char currentDir[];
+
 struct fs_diriteminfo
 	{
     unsigned short d_reclen;    /* length of this record */
@@ -44,7 +41,6 @@ struct fs_diriteminfo
 
 typedef struct
 	{
-	/*****TO DO:  Fill in this structure with what your open/read directory needs  *****/
 	unsigned short  d_reclen;		/*length of this record */
 	unsigned short	dirEntryPosition;	/*which directory entry position, like file pos */
 	uint64_t	directoryStartLocation;		/*Starting LBA of directory */
@@ -76,8 +72,6 @@ struct fs_stat
 	time_t    st_accesstime;   	/* time of last access */
 	time_t    st_modtime;   	/* time of last modification */
 	time_t    st_createtime;   	/* time of last status change */
-
-	/* add additional attributes here for your file system */
 	};
 
 int fs_stat(const char *path, struct fs_stat *buf);

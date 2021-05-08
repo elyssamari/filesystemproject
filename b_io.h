@@ -1,8 +1,8 @@
 /**************************************************************
-* Class:  CSC-415-0# 
-* Name:
-* Student ID:
-* Project: File System Project
+* Class:  CSC-415-01 Spring 2021
+* Name: Annie Liao, Vivian Kuang, Elyssa Tapawan, Joanne Wong
+* Student ID: 918266744, 918403595, 918459248, 918441685
+* Project: Basic File System
 *
 * File: b_io.h
 *

@@ -1,16 +1,13 @@
 /**************************************************************
-* Class:  CSC-415
-* Name: Professor Bierman
-* Student ID: N/A
+* Class:  CSC-415-01 Spring 2021
+* Name: Annie Liao, Vivian Kuang, Elyssa Tapawan, Joanne Wong
+* Student ID: 918266744, 918403595, 918459248, 918441685
 * Project: Basic File System
 *
 * File: VCB.h
 *
-* Description: this is the header file of the VCB.c.
-*		I didn't know how to share values between
-*		different c files. I had to google it and
-*		learned about extern from stackoverflow. I'm
-*		sorry.
+* Description: This is the header file of the VCB.c.
+*
 **************************************************************/
 #include "fsLow.h"
 #define Signu 0x726f766976727553
@@ -34,7 +31,6 @@ typedef struct VCB{
 	uint64_t sffs;				//block size of free space map
 } VCB_t, *VCB_p;
 
-//based on the struct provided in the Tuesday lecture 4/13
 typedef struct de{
 	uint64_t ford;				//file (0) or directory (1)
 	uint64_t size;				//size of de
@@ -45,12 +41,6 @@ typedef struct de{
 						//where the directory was made (pwd)
 } de_t, *de_p;
 
-/*typedef struct ftbl{
-	uint64_t begins;
-	uint64_t length;
-}ftbl_t,*ftbl_p;*/
-
-//#include "fsLow.h"
 extern VCB_p vcbp;								//VCB_p vcbp = NULL in VCB.c
 extern de_t *dea;								//de_t * dea = NULL in VCB.c
 int init_VCB_blk(uint64_t  nblk, uint64_t  sblk);				//init_VCB_blk in VCB.c

@@ -1,7 +1,7 @@
 /**************************************************************
-* Class:  CSC-415
-* Name: Professor Bierman
-* Student ID: N/A
+* Class:  CSC-415-01 Spring 2021
+* Name: Professor Bierman, Survivors...
+* Student ID: 918266744, 918403595, 918459248, 918441685
 * Project: Basic File System
 *
 * File: fsShell.c
@@ -347,59 +347,67 @@ int cmd_cp (int argcnt, char *argvec[])
 ****************************************************/
 int cmd_mv (int argcnt, char *argvec[])
     {
-#if (CMDMV_ON == 1)                
-    // return -99;
-    // **** TODO ****  For you to implement
-    char * src;
-    char * dest;    
-    int mv_src_fd;
-    int mv_dest_fd;
-    int mv_readcount;
-    char buf[BUFFERLEN];
+#if (CMDMV_ON == 1) 
+	int destExist = -1; // if dest exist, 0, if no -1 
+	int destFile = -1; // if dest is a file, 0, if no -1
+	int srcExist = -1; // if src exist, 0, if no -1
+	char * src = argvec[1];
+	char * dest = argvec[2];
 
-    //copy src to dest and remove src, which is also renaming the destination to the src
-    switch (argcnt)
-    {
-        case 2: //only one name provided
-            src = argvec[1];
-            dest = src;
-            printf("Few arguments! Src: %s\n",src); //prints few arguments when user doesn't give a dest 
-            break;
-        case 3: //both names provided
-            src = argvec[1];
-            dest = argvec[2];
-            break;
-        default:
-            printf("Usage: mv src dest\n");
-            return -1;
-    }
-    printf("src: %s\ndest: %s\n", src, dest);
+	for(int i = 0; i<vcbp->sroots; i++){
+		if (strcmp(currentDir, dea[i].currentDir)==0 && strcmp(src, dea[i].dename)==0){
+			srcExist = 0;
+		} 
+	}
 
-    mv_src_fd = b_open (src, O_RDONLY);
-    mv_dest_fd = b_open (dest, O_WRONLY | O_CREAT | O_TRUNC);
-        
-	//copy files, like in the cp command
-        do 
-                {
-                mv_readcount = b_read (mv_src_fd, buf, BUFFERLEN);
-	        b_write (mv_dest_fd, buf, mv_readcount);
-    	
-	    //removes direcory of file
-   	    if (fs_isDir (src))
-                {
-                return (fs_rmdir (src)); //if direcory removes src
-                }
-            if (fs_isFile (src))
-                {
-                return (fs_delete(src)); //if file deletes src
-                }
-                } while (mv_readcount == BUFFERLEN);
+	if (srcExist == -1) {
+		printf("Error: Source does not exist.\nUsage: mv src dest\n");
+		return -1;
+	}
 
-        b_close (mv_src_fd);
-        b_close (mv_dest_fd);
+	// If dest is a file and exists in the current working directory, we return -1 because we can not possibly 
+	// move a directory for example into a text file. 
+	for(int i = 0; i<vcbp->sroots; i++){
+		if (strcmp(dest, dea[i].dename)==0 && strcmp(currentDir, dea[i].currentDir)==0){
+			destExist = 0;
+			if (dea[i].ford == 0) {
+				destFile = 0;
+			}
+			break;
+		} 
+	}
+	
+	if (destFile == 0 && destExist == 0) {
+		printf("Error: The destination is a file that already exists.\n");
+		return -1;
+	} else if (destFile == -1 && destExist == -1){
+		// However, if the dest name does not exist, we can rename the existing src to dest. Same goes for directories.
+		for(int i = 0; i<vcbp->sroots; i++){
+			if (strcmp(src, dea[i].dename)==0 && strcmp(currentDir, dea[i].currentDir)==0){
+		   		strcpy(dea[i].dename, dest);
+				LBAwrite(dea, vcbp->srootbs, vcbp->sroot);
+				return 0;
+			}
+		} 
+	}
+	
+	// Moving a directory or file into a directory
+	char cdDir[100];
+  	strcpy(cdDir, currentDir);
+  	strcat(cdDir, "/");
+      	strcat(cdDir, dest);
 
+	for(int i = 0; i<vcbp->sroots; i++){
+		if (strcmp(currentDir, dea[i].currentDir)==0 && strcmp(src, dea[i].dename)==0){
+		   	strcpy(dea[i].currentDir, cdDir);
+			LBAwrite(dea, vcbp->srootbs, vcbp->sroot);
+			return 0;
+		} 
+	}
+
+	printf("Error: Source does not exist.\nUsage: mv src dest\n");
 #endif
-    return 0;
+	return -1;
     }   
 /****************************************************
 *  Make Directory commmand
@@ -769,18 +777,17 @@ int main (int argc, char * argv[])
 #endif
 		
 		cmd = malloc (strlen(cmdin) + 30);
-		strcpy (cmd, cmdin);printf("b4 a free here in main free cmdin\n");
+		strcpy (cmd, cmdin);
 		free (cmdin);
 		cmdin = NULL;
 		
 		if (strcmp (cmd, "exit") == 0)
-			{printf("b4 a free here inmain free smd if exit\n");
+			{
 			free (cmd);
 			cmd = NULL;
 			// exit while loop and terminate shell
 			close_vcb(); //closing the partition everytime we end process
 			closePartitionSystem();
-			printf("closed partition.\n");
 			break;
 			}
 			
@@ -793,7 +800,7 @@ int main (int argc, char * argv[])
 				}
 			processcommand (cmd);
 			}
-		printf("b4 a free here in main free cmd\n");		
+
 		free (cmd);
 		cmd = NULL;		
 		} // end while

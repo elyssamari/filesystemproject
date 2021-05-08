@@ -1,3 +1,16 @@
+/**************************************************************
+* Class:  CSC-415-01 Spring 2021
+* Name: Annie Liao, Vivian Kuang, Elyssa Tapawan, Joanne Wong
+* Student ID: 918266744, 918403595, 918459248, 918441685
+* Project: Basic File System
+*
+* File: mfs.h
+*
+* Description: We are creating the functions from mfs.h that
+* will be utilized in fsshell when we run commands like ls,
+* pwd, cd, rm, etc.	
+*
+**************************************************************/
 #include "mfs.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -6,11 +19,8 @@ VCB_p vcbp;
 char currentDir[100]=".";
 int count = 0;
 int count2 = 0;
-//fdDir * fdr;
-//struct fs_diriteminfo * dinfo;
 
 int fs_mkdir(const char *pathname, mode_t mode){
-	printf("Pathname: %s\n",pathname);
 	for(int i = 0; i<vcbp->sroots; i++){
 		if (strcmp(currentDir,dea[i].currentDir)==0 && strcmp(pathname, dea[i].dename)==0){
 			printf("Directory name already exists in this current working directory.\n");
@@ -20,7 +30,6 @@ int fs_mkdir(const char *pathname, mode_t mode){
 
 	char* pname = malloc(10);
 	strcpy(pname,pathname);
-	//int free_space = allocate_free_space(2);
 	int entry = makede(pname,0,0,1,currentDir);
 	
 	if(entry > 0 ){
@@ -102,7 +111,7 @@ fdDir * fs_opendir(const char *name){
         	}
     	}
 
-    return fdr;
+	return fdr;
 }
 
 /* We are currently listing all the directory entry names (files and directories) that are in the current working
@@ -125,8 +134,7 @@ struct fs_diriteminfo *fs_readdir(fdDir *dirp){
 		count2++;
    	}
 
-    return dinfo;
-
+	return dinfo;
 }
 
 int fs_closedir(fdDir *dirp){
@@ -202,7 +210,7 @@ int fs_isFile(char * path){	//return 1 if file, 0 otherwise
 	for(int i = 0; i < vcbp->sroots; i++){
 		if (strcmp(dea[i].dename, path) == 0){
 			if (dea[i].ford == 0){
-			   return 1;
+				return 1;
 			}
 		}
 	}
@@ -214,7 +222,7 @@ int fs_isDir(char * path){		//return 1 if directory, 0 otherwise
 	for(int i = 0; i < vcbp->sroots; i++){
 		if(strcmp(dea[i].dename, path) == 0){
 			if (dea[i].ford == 1){
-			   return 1;
+				return 1;
 			}
 		}
 	}
@@ -225,13 +233,13 @@ int fs_delete(char* filename){	//removes a file
 	//release
 	for(int i = 0; i<vcbp->sroots; i++){
 		if (strcmp(filename,dea[i].dename)==0){
-		   release_free_space(dea[i].loc, dea[i].size);
-		   dea[i].ford = 0;
-		   dea[i].size = -1;
-		   dea[i].loc = 0;
-		   strcpy(dea[i].dename,"        ");
-		   LBAwrite(dea, vcbp->srootbs, vcbp->sroot);
-		   return 0;
+			release_free_space(dea[i].loc, dea[i].size);
+			dea[i].ford = 0;
+			dea[i].size = -1;
+			dea[i].loc = 0;
+			memset(dea[i].dename, 0, strlen(dea[i].dename));
+			LBAwrite(dea, vcbp->srootbs, vcbp->sroot);
+			return 0;
 		}
 	}
 

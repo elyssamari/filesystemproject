@@ -1,45 +1,27 @@
 /**************************************************************
-* Class:  CSC-415
-* Name: Professor Bierman
-* Student ID: N/A
+* Class:  CSC-415-01 Spring 2021
+* Name: Annie Liao, Vivian Kuang, Elyssa Tapawan, Joanne Wong
+* Student ID: 918266744, 918403595, 918459248, 918441685
 * Project: Basic File System
 *
 * File: VCB.c
 *
-* Description: this is to init the vcb and other functions
+* Description: This is to init the VCB and other functions
 *	       to keep track of data needed in the VCB.
-*
-* Disclaimer: the set bit and clear and check bit are from 
-* 	      from stackoverflow 
-*
-* bitmap[i] |=1<<i;		set
-* bitmap[i] &= ~(1<<i);		clear
-* bitmap[i] & 1<<i;		check, put in if statement
-*
-* How structs were made and they were inited were based off
-* the professor's code for the partition in fsLow.c 
 *
 **************************************************************/
 
-//#include <stdint.h>
 #include "VCB.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
-//#include "fsLow.h"
 #include <sys/types.h>
 #include <unistd.h>
 
 de_t * dea = NULL;
 VCB_p vcbp = NULL; 	//initailizing this so call on this for fields
 char * bitmap;		//use this to call on bitmap
-
-
-//to init the VCB, the commented out part also works but I couldn't call on that in other
-//functions and would get a segmentation fault when I did
-//I called this function from the fsLowDemo.c right under where it calls the start partition
-//I'm unsure if that is correct or if I'm supposed to call it in the start partition function
 
 int init_VCB_blk(uint64_t  nblk, uint64_t  sblk){
 	int vol_created = getval();
@@ -57,22 +39,18 @@ int init_VCB_blk(uint64_t  nblk, uint64_t  sblk){
 	vcbp -> nblkt = 0x6d756e6b636f6c62;			//words for number of blocks-seen in Hexdump (munkcolb)
 	vcbp -> nblk = nblk/sblk;
 	uint64_t written = init_free_space(vcbp->nblk,sblk);	//start freespace
-
 	vcbp -> sfs = 1;					//due to vcb in 0, free starts at 1
 	vcbp -> sroot = written+1;				//should be where free ends +1
 
-	uint64_t der = createDir("NULL",0);
-
+	uint64_t der = createDir("NULL", 0);
 	vcbp -> sroott = 0x74726964746f6f72;			//words for root dir-seen in Hexdump (tridtoor)
 	vcbp -> sfst = 0x6361707365657266;			//words for free space-seen in Hexdump (capseerf)
 	vcbp -> signu = Signu;
 	vcbp -> sffst = 0x657a697365657266;			//words for free space size (eziseerf)
-	
 	LBAwrite(vcbp, 1, 0);		//writing the vcb
 
 	return 0;
-
-	}
+}
 
 void close_vcb(){
 	free(vcbp);	//free the buffers
@@ -88,18 +66,17 @@ int getval(){
 
 	//not our volume
 	if (vcbp->signu == 0){
-	   return 0;
+		return 0;
 	}
 
 	//check if it's our volume
 	if (vcbp->signu==Signu){
-	//read and set structs
-           bitmap = (char*)calloc(((vcbp->sffs)*(vcbp->sblk)),sizeof(char));
-	   LBAread(bitmap,vcbp->sffs,vcbp->sfs);
-	   dea = malloc(10*(vcbp->sblk));
-	   LBAread(dea,vcbp->srootbs,vcbp->sroot);
-
-	   return 1;
+		//read and set structs
+		bitmap = (char*)calloc(((vcbp->sffs)*(vcbp->sblk)),sizeof(char));
+		LBAread(bitmap,vcbp->sffs,vcbp->sfs);
+		dea = malloc(10*(vcbp->sblk));
+		LBAread(dea,vcbp->srootbs,vcbp->sroot);
+		return 1;
 	}
 
 	return 0;
@@ -111,10 +88,10 @@ uint64_t init_free_space(){
 	uint64_t blksneed;
 
 	//check how much blocks needed for bitmap
-	if ((bytesN/vcbp->sblk)==0) {
-	   blksneed = 1;
+	if ((bytesN/vcbp->sblk)==0){
+		blksneed = 1;
 	} else if ((bytesN%vcbp->sblk)!=0){
-	   blksneed = (bytesN/vcbp->sblk)+1;
+		blksneed = (bytesN/vcbp->sblk)+1;
 	}
 
 	vcbp->sffs = blksneed;
@@ -123,21 +100,18 @@ uint64_t init_free_space(){
 	//set to zero
 	for(int j = 0; j< (bytesN); j++){
 		for(int k = 0; k < 8; k++){
-		   bitmap[j] |= 0 << k;
+			bitmap[j] |= 0 << k;
 		}
 	}
 
 	//set the bitmap in the bitmap including vcb
 	for(int i = 0; i<=blksneed; i++){
-	   bitmap[0] |= 1<<i;
+		bitmap[0] |= 1<<i;
 	}
-
 
 	uint64_t LBA_write = LBAwrite(bitmap,blksneed,1); //write the bitmap
 
-	return (LBA_write);	//I'm not sure what it should return
-				//if it return how many blks written
-				//then it's easier for root dir start
+	return (LBA_write);			
 }
 
 //find if there is continous nblksn amount of blocks free for use
@@ -149,20 +123,18 @@ int allocate_free_space(int nblksn){
 	for(int i = 0; i < vcbp->nblk/8; i++){			//go through bitmap array
 		for(int j = 0; j < 8; j++){			//go through bits of the char in bitmap
 			if((bitmap[i] & (1 << j)) == 0){	//check for unset bit
-
 				if(start == -1){		//check if start is set
-				start = (i * 8) + j;    	//set start block number
+					start = (i * 8) + j;    //set start block number
 				}
 
-			bitmap[i] |= 1 << j;			//set the bit
-			count ++;				//update count
+				bitmap[i] |= 1 << j;		//set the bit
+				count ++;			//update count
 			//lasti = (i*8)+j;
-				
 				if(count == nblksn){		//if enough continous block return start and write the changes
-				LBAwrite(bitmap,vcbp -> sffs, vcbp -> sfs);
-				return start;
+					LBAwrite(bitmap,vcbp -> sffs, vcbp -> sfs);
+					return start;
 				}
-			}else{					//if here, bit was set and there's a break in the continuity
+			} else {				//if here, bit was set and there's a break in the continuity
 				if(start > 0){
 					start = -1;		//start back at -1
 					count = 0;		//undo count
@@ -173,28 +145,6 @@ int allocate_free_space(int nblksn){
 
 	return start;
 }
-
-//Dunno if we are actually going to this one
-//set the bits starting at LBA til count, not sure about this one
-//seems like it could be done in allocate but then we should actually check if the block
-//has been written to. if this, then either we gotta store more values or put more paramters
-/*void set_free_space(int LBA, int count){
-	int index = (LBA / 8);			//each index of bitmap holds 8 so LBA/8 gives idx
-	int innerindex = (LBA % 8)-1;		//need the innerindex of the bitmap[idx]
-	int track = 0;				//to keep track of how much cleared
-
-	while (track < count){ 
-	      	bitmap[index] |= (1<<innerindex);//clear bit at inneridx of the bitmap[idx]
-		track++;			//update track
-		innerindex++;			//update innerindex
-
-		if (innerindex == 8){		//check if it's 8 bc then we reach end of innerindex
-			innerindex = 0;		//set to 0 to start new innerindex
-			index++;		//update idx to match the new innerindex
-		}
-	}
-	//uint64_t wroten = LBAwrite(bitmap,vcbp->sffs,vcbp->sfs);
-}*/
 
 //unset the bits starting at LBA til count
 void release_free_space(int LBA, int count){
@@ -220,14 +170,14 @@ uint64_t makede(char*fname, uint64_t index,uint64_t sz,uint64_t fod, char *curre
 
 	for (int i = 0; i<vcbp->sroots; i++){
         	if (dea[i].size == -1){			//find free spot in de array
-          	   strcpy(dea[i].dename,fname);
-           	   dea[i].namet = 0x74656d616e726964;	//name on hex dump (temanrid)
-                   dea[i].loc = index; 			//location of directory entry
-                   dea[i].ford = fod;			//file (0) or directory (1)
-                   dea[i].size = sz;			//size of directory entry
-                   strcpy(dea[i].currentDir, currentDir);//copy name of dir
-                   LBAwrite(dea, 10, vcbp->sroot);	//write changes
-            	   return i;
+			strcpy(dea[i].dename,fname);
+			dea[i].namet = 0x74656d616e726964;	//name on hex dump (temanrid)
+			dea[i].loc = index; 			//location of directory entry
+			dea[i].ford = fod;			//file (0) or directory (1)
+			dea[i].size = sz;			//size of directory entry
+			strcpy(dea[i].currentDir, currentDir);//copy name of dir
+ 			LBAwrite(dea, 10, vcbp->sroot);	//write changes
+			return i;
         	}
     	}
     return 0;
@@ -235,7 +185,6 @@ uint64_t makede(char*fname, uint64_t index,uint64_t sz,uint64_t fod, char *curre
 
 //create DE, put into DE array, LBA write, mark them out in free space 
 uint64_t createDir(char *name ,uint64_t i){
-
 	//get blocks for de array
 	uint64_t where_start = allocate_free_space(10);
 	dea = malloc(10*(vcbp->sblk));				//10 blocks for the de array
@@ -246,7 +195,7 @@ uint64_t createDir(char *name ,uint64_t i){
 	
 	if (strcmp(name,test_null)==0){				//check if it's for init
 		for (int g = 0; g<where_stop; g++){		//init size of de to -1
-		    dea[g].size = -1;
+			dea[g].size = -1;
 		}
 	    //setting of the child and parent of root
 	    strcpy(dea[0].dename,".");
